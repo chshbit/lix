@@ -422,31 +422,53 @@
         dockerImage = lib.genAttrs linux64BitSystems (system: self.packages.${system}.dockerImage);
 
         # API docs for Nix's unstable internal C++ interfaces.
-        internal-api-docs =
-          with nixpkgsFor.x86_64-linux.native;
-          with commonDeps { inherit pkgs; };
+        internal-api-docs = let
+          nixpkgs = nixpkgsFor.x86_64-linux.native;
+          inherit (nixpkgs) pkgs;
+          comDeps = commonDeps { inherit pkgs; };
 
-          stdenv.mkDerivation {
+          nix = nixpkgs.pkgs.callPackage ./package.nix {
+            inherit versionSuffix fileset officialRelease buildUnreleasedNotes;
+            inherit (comDeps) changelog-d;
+            boehmgc = comDeps.boehmgc-nix;
+            busybox-sandbox-shell = comDeps.sh;
+          };
+        in
+          nix.overrideAttrs (prev: {
             pname = "nix-internal-api-docs";
-            inherit version;
 
-            src = nixSrc;
+            outputs = [ "out" ];
+            separateDebugInfo = false;
 
-            configureFlags = testConfigureFlags ++ internalApiDocsConfigureFlags;
+            nativeBuildInputs = prev.nativeBuildInputs ++ [ pkgs.doxygen ];
 
-            nativeBuildInputs = nativeBuildDeps;
-            buildInputs = buildDeps ++ propagatedDeps
-              ++ awsDeps ++ checkDeps ++ internalApiDocsDeps;
+            # Depropagate the build inputs for the docs build.
+            propagatedBuildInputs = [ ];
+            buildInputs = prev.buildInputs ++ comDeps.internalApiDocsDeps ++ [
+              pkgs.gtest
+              pkgs.rapidcheck
+            ] ++ prev.propagatedBuildInputs;
 
-            dontBuild = true;
+            configureFlags = prev.configureFlags ++ [
+              "--enable-internal-api-docs"
+              "RAPIDCHECK_HEADERS=${lib.getDev pkgs.rapidcheck}/extras/gtest/include"
+            ];
 
             installTargets = [ "internal-api-html" ];
 
+            # Convince the package.nix logic that we're building,
+            # but don't actually run the build phase.
+            env.dontBuild = true;
+
+            doCheck = false;
+            doInstallCheck = false;
+
             postInstall = ''
               mkdir -p $out/nix-support
-              echo "doc internal-api-docs $out/share/doc/nix/internal-api/html" >> $out/nix-support/hydra-build-products
+              echo "doc internal-api-docs $out/share/doc/nix/internal-api/html" > $out/nix-support/hydra-build-products
+              rm $out/lib -rf
             '';
-          };
+          });
 
         # System tests.
         tests = import ./tests/nixos { inherit lib nixpkgs nixpkgsFor; } // {
