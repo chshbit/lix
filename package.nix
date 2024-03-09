@@ -35,7 +35,7 @@
   utillinuxMinimal ? null,
   xz,
 
-  busybox-sandbox-shell ? null,
+  busybox-sandbox-shell,
 
   pname ? "nix",
   versionSuffix ? "",
@@ -152,17 +152,12 @@ in stdenv.mkDerivation (finalAttrs: {
     ++ lib.optional stdenv.hostPlatform.isx86_64 libcpuid
     # There have been issues building these dependencies
     ++ lib.optional (stdenv.hostPlatform == stdenv.buildPlatform) aws-sdk-cpp-nix
-    # FIXME(Qyriad): This is how the flake.nix version does it, but this is cursed.
-    ++ lib.optionals (finalAttrs.doCheck) finalAttrs.passthru._checkInputs
   ;
 
-  passthru._checkInputs = [
+  checkInputs = [
     gtest
     rapidcheck
   ];
-
-  # FIXME(Qyriad): remove at the end of refactoring.
-  checkInputs = finalAttrs.passthru._checkInputs;
 
   propagatedBuildInputs = [
     boehmgc
@@ -244,7 +239,6 @@ in stdenv.mkDerivation (finalAttrs: {
 
   meta.platforms = lib.platforms.unix;
 
-  passthru.finalAttrs = finalAttrs;
   passthru.perl-bindings = pkgs.callPackage ./perl {
     inherit fileset stdenv;
   };
