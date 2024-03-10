@@ -9,6 +9,7 @@
   nlohmann_json,
   bison,
   changelog-d,
+  cmake,
   boost,
   brotli,
   bzip2,
@@ -24,10 +25,13 @@
   libcpuid,
   libseccomp,
   libsodium,
+  lsof,
   lowdown,
   mdbook,
   mdbook-linkcheck,
   mercurial,
+  meson,
+  ninja,
   openssl,
   pkg-config,
   rapidcheck,
@@ -125,6 +129,12 @@ in stdenv.mkDerivation (finalAttrs: {
     ++ lib.optionals (!finalAttrs.dontBuild) [ "dev" "doc" ];
 
   dontBuild = false;
+  # FIXME(Qyriad): see if this is still needed once the migration to Meson is completed.
+  dontUseCmakeConfigure = true;
+  dontUseMesonConfigure = true;
+  dontUseNinjaBuild = true;
+  dontUseNinjaCheck = true;
+  dontUseNinjaInstall = true;
 
   nativeBuildInputs = [
     bison
@@ -141,6 +151,10 @@ in stdenv.mkDerivation (finalAttrs: {
     git
     mercurial
     jq
+    cmake
+    meson
+    ninja
+    lsof
   ] ++ lib.optional stdenv.hostPlatform.isLinux util-linuxMinimal
     ++ lib.optional (!officialRelease && buildUnreleasedNotes) changelog-d
     ++ lib.optional internalApiDocs doxygen
@@ -176,6 +190,11 @@ in stdenv.mkDerivation (finalAttrs: {
   disallowedReferences = [
     boost
   ];
+
+  # Needed for Meson to find Boost.
+  # https://github.com/NixOS/nixpkgs/issues/86131.
+  env.BOOST_INCLUDEDIR = "${lib.getDev boost}/include";
+  env.BOOST_LIBRARYDIR = "${lib.getLib boost}/lib";
 
   preConfigure = lib.optionalString (!finalAttrs.dontBuild && !stdenv.hostPlatform.isStatic) ''
     # Copy libboost_context so we don't get all of Boost in our closure.
