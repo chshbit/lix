@@ -1,0 +1,16 @@
+# vim: filetype=meson
+option('enable-gc', type : 'feature',
+  description : 'enable garbage collection in the Nix expression evaluator (requires Boehm GC)',
+)
+# TODO(Qyriad): is this feature maintained?
+option('enable-embedded-sandbox-shell', type : 'feature',
+  description : 'include the sandbox shell in the Nix bindary',
+)
+
+option('enable-cpuid', type : 'feature',
+  description : 'determine microarchitecture levels with libcpuid (only relevant on x86_64)',
+)
+
+option('enable-seccomp-sandboxing', type : 'feature',
+  description : 'build support for seccomp sandboxing (recommended unless your arch doesn\'t support libseccomp, only relevant on Linux)',
+)

@@ -9,6 +9,7 @@
   nlohmann_json,
   bison,
   changelog-d,
+  cmake,
   boost,
   brotli,
   bzip2,
@@ -27,6 +28,8 @@
   mdbook,
   mdbook-linkcheck,
   mercurial,
+  meson,
+  ninja,
   openssl,
   pkg-config,
   rapidcheck,
@@ -132,6 +135,9 @@ in stdenv.mkDerivation (finalAttrs: {
     git
     mercurial
     jq
+    cmake
+    meson
+    ninja
   ] ++ lib.optional stdenv.hostPlatform.isLinux util-linuxMinimal
     ++ lib.optional (!officialRelease && buildUnreleasedNotes) changelog-d;
 
