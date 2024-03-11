@@ -141,7 +141,8 @@ endif
 $(d)/test-libstoreconsumer.sh.test $(d)/test-libstoreconsumer.sh.test-debug: \
   $(buildprefix)$(d)/test-libstoreconsumer/test-libstoreconsumer
 $(d)/plugins.sh.test $(d)/plugins.sh.test-debug: \
-  $(buildprefix)$(d)/plugins/libplugintest.$(SO_EXT)
+  $(buildprefix)$(d)/plugins/libplugintest.$(SO_EXT) \
+  $(buildprefix)$(d)/plugins/libplugintestfail.$(SO_EXT)
 
 install-tests += $(foreach x, $(nix_tests), $(d)/$(x))
 
