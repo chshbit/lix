@@ -3,6 +3,7 @@ project('lix', 'cpp',
   default_options : [
     'buildtype=debugoptimized',
     'cpp_std=c++20',
+    'warning_level=1',
   ],
 )
 
@@ -11,15 +12,22 @@ cxx = meson.get_compiler('cpp')
 host_system = host_machine.cpu_family() + '-' + host_machine.system()
 message('canonical Nix system name:', host_system)
 
+all_sources = { }
+all_deps = { }
+
 deps = [ ]
 configdata = { }
-#'AWS_VERSION_MAJOR': aws_sdk_version_major,
-#'AWS_VERSION_MINOR': aws_sdk_version_minor,
-#'AWS_VERSION_PATCH': aws_sdk_version_patch,
-#'CAN_LINK_SYMLINK': can_link_symlink.to_int(),
 
 aws_sdk = dependency('aws-cpp-sdk-core', required : false)
 if aws_sdk.found()
+  # The AWS pkg-config adds -std=c++11.
+  aws_sdk = aws_sdk.partial_dependency(
+    compile_args : false,
+    includes : true,
+    link_args : true,
+    links : true,
+    sources : true,
+  )
   deps += aws_sdk
   s = aws_sdk.version().split('.')
   configdata += {
@@ -29,12 +37,20 @@ if aws_sdk.found()
   }
 endif
 aws_s3 = dependency('aws-cpp-sdk-s3', required : false)
+if aws_s3.found()
+  # The AWS pkg-config adds -std=c++11.
+  aws_s3 = aws_s3.partial_dependency(
+    compile_args : false,
+    includes : true,
+    link_args : true,
+    links : true,
+    sources : true,
+  )
+  deps += aws_s3
+endif
 configdata += {
   'ENABLE_S3': aws_s3.found().to_int(),
 }
-if aws_s3.found()
-  deps += aws_s3
-endif
 
 run_command('ln', '-s', 'bla', 'tmp_link', check : true)
 can_link_symlink = run_command('ln', 'tmp_link', 'tmp_link2', check : false).returncode() == 0
@@ -92,7 +108,7 @@ configdata += {
   'HAVE_BOEHMGC': boehm.found().to_int(),
 }
 
-boost = dependency('boost', required : true)
+boost = dependency('boost', required : true, modules : ['context', 'coroutine', 'container'])
 deps += boost
 
 cpuid = dependency('libcpuid', required : get_option('enable-cpuid'))
@@ -106,6 +122,19 @@ configdata += {
   'HAVE_SECCOMP': seccomp.found().to_int(),
 }
 
+libarchive = dependency('libarchive', required : true)
+deps += libarchive
+
+brotli = [
+  dependency('libbrotlicommon', required : true),
+  dependency('libbrotlidec', required : true),
+  dependency('libbrotlienc', required : true),
+]
+deps += brotli
+
+openssl = dependency('libcrypto', required : true)
+deps += openssl
+
 configure_file(
   configuration : {
     'PACKAGE_NAME': '"' + meson.project_name() + '"',
@@ -118,36 +147,16 @@ configure_file(
   output : 'config.h',
 )
 
-libutil_srcs = [
-  'src/libutil/archive.cc',
-  'src/libutil/args.cc',
-  'src/libutil/canon-path.cc',
-  'src/libutil/cgroup.cc',
-  'src/libutil/compression.cc',
-  'src/libutil/compute-levels.cc',
-  'src/libutil/config.cc',
-  'src/libutil/english.cc',
-  'src/libutil/error.cc',
-  'src/libutil/experimental-features.cc',
-  'src/libutil/filesystem.cc',
-  'src/libutil/git.cc',
-  'src/libutil/hash.cc',
-  'src/libutil/hilite.cc',
-  'src/libutil/json-utils.cc',
-  'src/libutil/logging.cc',
-  'src/libutil/namespaces.cc',
-  'src/libutil/position.cc',
-  'src/libutil/references.cc',
-  'src/libutil/serialise.cc',
-  'src/libutil/source-path.cc',
-  'src/libutil/suggestions.cc',
-  'src/libutil/tarfile.cc',
-  'src/libutil/thread-pool.cc',
-  'src/libutil/url.cc',
-  'src/libutil/util.cc',
-  'src/libutil/xml-writer.cc',
-]
-
-library('nixutil', libutil_srcs,
-  implicit_include_directories : true,
+add_project_arguments(
+  # TODO(Qyriad): Yes this is how the autoconf+Make system did it.
+  # I would love to remove this.
+  '-include', 'config.h',
+  # TODO(Qyriad): would love to remove these
+  '-Wno-deprecated-declarations',
+  '-Wno-unused-parameter',
+  '-Wno-missing-field-initializers',
+  '-Wno-deprecated-copy',
+  language : 'cpp',
 )
+
+subdir('src/libutil')

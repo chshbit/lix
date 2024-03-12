@@ -174,6 +174,11 @@ in stdenv.mkDerivation (finalAttrs: {
     boost
   ];
 
+  # Needed for Meson to find Boost.
+  # https://github.com/NixOS/nixpkgs/issues/86131.
+  env.BOOST_INCLUDEDIR = "${lib.getDev boost}/include";
+  env.BOOST_LIBRARYDIR = "${lib.getLib boost}/lib";
+
   preConfigure = lib.optionalString (finalAttrs.doBuild && (! stdenv.hostPlatform.isStatic)) ''
       # Copy libboost_context so we don't get all of Boost in our closure.
       # https://github.com/NixOS/nixpkgs/issues/45462
