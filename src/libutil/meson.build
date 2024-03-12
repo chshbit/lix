@@ -1,5 +1,3 @@
-
-
 libutil_sources = files(
   'archive.cc',
   'args.cc',
@@ -34,7 +32,7 @@ all_sources += {
   'libutil': libutil_sources,
 }
 
-library(
+libutil = library(
   'nixutil',
   libutil_sources,
   dependencies : [
@@ -49,4 +47,9 @@ library(
     openssl,
   ],
   implicit_include_directories : true,
+)
+
+liblixutil = declare_dependency(
+  include_directories : include_directories('.'),
+  link_with : libutil
 )

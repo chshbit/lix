@@ -18,7 +18,46 @@ all_deps = { }
 deps = [ ]
 configdata = { }
 
-aws_sdk = dependency('aws-cpp-sdk-core', required : false)
+#
+# Dependencies
+#
+
+boehm = dependency('bdw-gc', required : get_option('gc'))
+if boehm.found()
+  deps += boehm
+endif
+configdata += {
+  'HAVE_BOEHMGC': boehm.found().to_int(),
+}
+
+boost = dependency('boost', required : true, modules : ['context', 'coroutine', 'container'])
+deps += boost
+
+cpuid = dependency('libcpuid', 'cpuid', required : get_option('cpuid'))
+configdata += {
+  'HAVE_LIBCPUID': cpuid.found().to_int(),
+  }
+deps += cpuid
+
+seccomp = dependency('libseccomp', 'seccomp', required : get_option('seccomp-sandboxing'))
+configdata += {
+  'HAVE_SECCOMP': seccomp.found().to_int(),
+  }
+
+libarchive = dependency('libarchive', required : true)
+deps += libarchive
+
+brotli = [
+  dependency('libbrotlicommon', required : true),
+  dependency('libbrotlidec', required : true),
+  dependency('libbrotlienc', required : true),
+  ]
+deps += brotli
+
+openssl = dependency('libcrypto', 'openssl', required : true)
+deps += openssl
+
+aws_sdk = dependency('aws-cpp-sdk-core', required : true)
 if aws_sdk.found()
   # The AWS pkg-config adds -std=c++11.
   aws_sdk = aws_sdk.partial_dependency(
@@ -35,8 +74,15 @@ if aws_sdk.found()
     'AWS_VERSION_MINOR': s[1].to_int(),
     'AWS_VERSION_PATCH': s[2].to_int(),
   }
+  aws_sdk_transfer = dependency('aws-cpp-sdk-transfer', required : true).partial_dependency(
+    compile_args : false,
+    includes : true,
+    link_args : true,
+    links : true,
+    sources : true,
+  )
 endif
-aws_s3 = dependency('aws-cpp-sdk-s3', required : false)
+aws_s3 = dependency('aws-cpp-sdk-s3', required : true)
 if aws_s3.found()
   # The AWS pkg-config adds -std=c++11.
   aws_s3 = aws_s3.partial_dependency(
@@ -48,10 +94,26 @@ if aws_s3.found()
   )
   deps += aws_s3
 endif
-configdata += {
-  'ENABLE_S3': aws_s3.found().to_int(),
-}
 
+sqlite = dependency('sqlite3', 'sqlite', version : '>=3.6.19', required : true)
+deps += sqlite
+
+sodium = dependency('sodium', 'libsodium', required : true)
+deps += sodium
+
+curl = dependency('libcurl', 'curl', required : true)
+deps += curl
+
+#
+# Build-time tools
+#
+lsof = find_program('lsof')
+
+#
+# Configuration
+#
+
+# FIXME(Qyriad): at least do this in the build directory
 run_command('ln', '-s', 'bla', 'tmp_link', check : true)
 can_link_symlink = run_command('ln', 'tmp_link', 'tmp_link2', check : false).returncode() == 0
 run_command('rm', '-f', 'tmp_link', 'tmp_link2', check : true)
@@ -100,40 +162,9 @@ configdata += {
   'HAVE_PUBSETBUF': has_pubsetbuf.to_int(),
 }
 
-boehm = dependency('bdw-gc', required : get_option('enable-gc'))
-if boehm.found()
-  deps += boehm
-endif
 configdata += {
-  'HAVE_BOEHMGC': boehm.found().to_int(),
+  'ENABLE_S3': aws_s3.found().to_int(),
 }
-
-boost = dependency('boost', required : true, modules : ['context', 'coroutine', 'container'])
-deps += boost
-
-cpuid = dependency('libcpuid', required : get_option('enable-cpuid'))
-configdata += {
-  'HAVE_LIBCPUID': cpuid.found().to_int(),
-}
-deps += cpuid
-
-seccomp = dependency('libseccomp', required : get_option('enable-seccomp-sandboxing'))
-configdata += {
-  'HAVE_SECCOMP': seccomp.found().to_int(),
-}
-
-libarchive = dependency('libarchive', required : true)
-deps += libarchive
-
-brotli = [
-  dependency('libbrotlicommon', required : true),
-  dependency('libbrotlidec', required : true),
-  dependency('libbrotlienc', required : true),
-]
-deps += brotli
-
-openssl = dependency('libcrypto', required : true)
-deps += openssl
 
 configure_file(
   configuration : {
@@ -160,3 +191,5 @@ add_project_arguments(
 )
 
 subdir('src/libutil')
+# Load-bearing order. libstore depends on libutil (includes).
+subdir('src/libstore')
