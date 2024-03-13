@@ -193,3 +193,4 @@ add_project_arguments(
 subdir('src/libutil')
 # Load-bearing order. libstore depends on libutil (includes).
 subdir('src/libstore')
+subdir('src/libfetchers')

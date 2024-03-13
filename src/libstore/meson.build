@@ -106,7 +106,7 @@ foreach name, value : cpp_str_defines
   ]
 endforeach
 
-library(
+libstore = library(
   'nixstore',
   libstore_sources,
   schema_sql_gen,
@@ -122,4 +122,10 @@ library(
     aws_sdk_transfer,
   ],
   cpp_args : cpp_args,
+)
+
+# Used by libfetchers.
+liblixstore = declare_dependency(
+  include_directories : include_directories('.'),
+  link_with : libstore,
 )

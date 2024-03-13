@@ -49,6 +49,7 @@ libutil = library(
   implicit_include_directories : true,
 )
 
+# Used by libstore and libfetchers.
 liblixutil = declare_dependency(
   include_directories : include_directories('.'),
   link_with : libutil
