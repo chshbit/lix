@@ -104,6 +104,12 @@ deps += sodium
 curl = dependency('libcurl', 'curl', required : true)
 deps += curl
 
+editline = dependency('libeditline', 'editline', version : '>=1.14', required : true)
+deps += editline
+
+lowdown = dependency('lowdown', version : '>=0.9.0', required : true)
+deps += lowdown
+
 #
 # Build-time tools
 #
@@ -199,3 +205,5 @@ subdir('src/libfetchers')
 subdir('src/libexpr')
 # libmain depends on libutil and libstore.
 subdir('src/libmain')
+# libcmd depends on everything
+subdir('src/libcmd')
