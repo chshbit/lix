@@ -1,3 +1,15 @@
+libcmd_generated_headers = []
+foreach header : [ 'repl-overlays.nix' ]
+  libcmd_generated_headers += custom_target(
+    command : [ 'bash', '-c', 'echo \'R"__NIX_STR(\' | cat - @INPUT@ && echo \')__NIX_STR"\'' ],
+    input : header,
+    output : '@PLAINNAME@.gen.hh',
+    capture : true,
+    install : true,
+    install_dir : includedir / 'nix',
+  )
+endforeach
+
 libcmd_sources = files(
   'built-path.cc',
   'command-installable-value.cc',
@@ -34,6 +46,7 @@ libcmd_headers = files(
 
 libcmd = library(
   'nixcmd',
+  libcmd_generated_headers,
   libcmd_sources,
   dependencies : [
     liblixutil,
