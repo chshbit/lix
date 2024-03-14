@@ -197,3 +197,5 @@ subdir('src/libstore')
 subdir('src/libfetchers')
 # libexpr depends on libfetchers.
 subdir('src/libexpr')
+# libmain depends on libutil and libstore.
+subdir('src/libmain')
