@@ -1,10 +1,6 @@
 programs += test-repl-characterization
 
-installcheck: test-repl-characterization_RUN
-
 test-repl-characterization_DIR := $(d)
-
-test-repl-characterization_ENV := _NIX_TEST_UNIT_DATA=$(shell realpath "$(d)")/data
 
 # do not install
 test-repl-characterization_INSTALL_DIR :=
@@ -12,7 +8,7 @@ test-repl-characterization_INSTALL_DIR :=
 test-repl-characterization_SOURCES := \
   $(wildcard $(d)/*.cc) \
 
-test-repl-characterization_CXXFLAGS += -I src/libutil -I tests/unit/libutil-support
+test-repl-characterization_CXXFLAGS += -I src/libutil -I tests/unit/libutil-support -DNIX_BIN_DIR="\"$(bindir)\""
 
 test-repl-characterization_LIBS = libutil libutil-test-support
 

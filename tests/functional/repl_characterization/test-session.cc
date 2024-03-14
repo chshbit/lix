@@ -1,4 +1,5 @@
 #include <iostream>
+#include <unistd.h>
 
 #include "test-session.hh"
 #include "util.hh"
@@ -28,7 +29,7 @@ RunningProcess RunningProcess::start(std::string executable, Strings args)
         procStdout.readSide.close();
         if (dup2(STDOUT_FILENO, STDERR_FILENO) == -1)
             throw SysError("dupping stderr");
-        execvp(executable.c_str(), stringsToCharPtrs(args).data());
+        execve(executable.c_str(), stringsToCharPtrs(args).data(), environ);
         throw SysError("exec did not happen");
     });
 

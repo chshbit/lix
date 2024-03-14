@@ -1,3 +1,4 @@
+#include <filesystem>
 #include <gtest/gtest.h>
 
 #include <string>
@@ -47,8 +48,10 @@ public:
         Strings args{"--quiet", "repl", "--quiet", "--extra-experimental-features", "repl-automation"};
         args.insert(args.end(), extraArgs.begin(), extraArgs.end());
 
+        auto nixBin = canonPath(getEnvNonEmpty("NIX_BIN_DIR").value_or(NIX_BIN_DIR));
+
         // TODO: why the fuck does this need two --quiets
-        auto process = RunningProcess::start("nix", args);
+        auto process = RunningProcess::start(nixBin + "/nix", args);
         auto session = TestSession{AUTOMATION_PROMPT, std::move(process)};
 
         for (auto & bit : syntax) {
