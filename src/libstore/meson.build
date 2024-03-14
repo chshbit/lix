@@ -1,21 +1,25 @@
-find_program('lsof')
-
-# Yes this is really what it does.
-# FIXME: do we. really need to rely on the shell for this?
-gen_script = '''
-  echo 'R"foo(' >> @OUTPUT@.tmp &&
-  cat < @INPUT@ >> @OUTPUT@.tmp &&
-  echo ')foo"' >> @OUTPUT@.tmp &&
-  mv @OUTPUT@.tmp @OUTPUT
-'''.replace('\n', ' ')
+bash = find_program('bash')
 
 schema_sql_gen = custom_target(
   input : 'schema.sql',
   output : 'schema.sql.gen.hh',
   command : [
-    'bash', '-c',
-    gen_script,
+    bash,
+    '-c',
+    'echo \'R"foo(\' | cat - @INPUT@ && echo \')foo"\'',
   ],
+  capture : true,
+)
+
+ca_specific_schema = custom_target(
+  input : 'ca-specific-schema.sql',
+  output : 'ca-specific-schema.sql.gen.hh',
+  command : [
+    bash,
+    '-c',
+    'echo \'R"foo(\' | cat - @INPUT@ && echo \')foo"\'',
+  ],
+  capture : true,
 )
 
 libstore_sources = files(
@@ -87,8 +91,8 @@ all_sources += {
 }
 
 cpp_str_defines = {
-  'NIX_PREFIX': get_option('prefix'),
   'LSOF': lsof.full_path(),
+  'NIX_PREFIX':    get_option('prefix'),
   'NIX_STORE_DIR': get_option('store-dir'),
   'NIX_DATA_DIR':  get_option('prefix') / 'share', # FIXME: make separately-configurable
   'NIX_STATE_DIR': get_option('prefix') / 'nix', # FIXME: same
@@ -108,8 +112,9 @@ endforeach
 
 libstore = library(
   'nixstore',
-  libstore_sources,
   schema_sql_gen,
+  ca_specific_schema,
+  libstore_sources,
   dependencies : [
     libarchive,
     liblixutil, # Internal.

@@ -13,11 +13,16 @@ libfetchers_sources = files(
   'tarball.cc',
 )
 
-library(
+libfetchers = library(
   'nixfetchers',
   libfetchers_sources,
   dependencies : [
     liblixstore,
     liblixutil,
   ],
+)
+
+liblixfetchers = declare_dependency(
+  include_directories : include_directories('.'),
+  link_with : libfetchers,
 )
