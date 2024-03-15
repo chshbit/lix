@@ -1,5 +1,3 @@
-bash = find_program('bash')
-
 schema_sql_gen = custom_target(
   input : 'schema.sql',
   output : 'schema.sql.gen.hh',
@@ -90,16 +88,22 @@ all_sources += {
   'libstore': libstore_sources,
 }
 
+prefix = get_option('prefix')
+
 cpp_str_defines = {
   'LSOF': lsof.full_path(),
   'NIX_PREFIX':    get_option('prefix'),
   'NIX_STORE_DIR': get_option('store-dir'),
   'NIX_DATA_DIR':  get_option('prefix') / 'share', # FIXME: make separately-configurable
-  'NIX_STATE_DIR': get_option('prefix') / 'nix', # FIXME: same
+  #'NIX_STATE_DIR': get_option('prefix') / 'nix', # FIXME: same
   'NIX_LOG_DIR':   get_option('prefix') / 'log' / 'nix', # FIXME: same
   'NIX_CONF_DIR':  get_option('prefix') / 'etc', # FIXME: same
   'NIX_BIN_DIR':   get_option('prefix') / 'bin', # FIXME: same
   'NIX_MAN_DIR':   get_option('prefix') / 'share' / 'man', # FIXME: same
+}
+
+cpp_str_defines += {
+  'NIX_STATE_DIR': '/nix/var/nix',
 }
 
 cpp_args = []

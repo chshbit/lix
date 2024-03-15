@@ -113,6 +113,7 @@ deps += lowdown
 #
 # Build-time tools
 #
+bash = find_program('bash')
 lsof = find_program('lsof')
 
 #
@@ -196,14 +197,4 @@ add_project_arguments(
   language : 'cpp',
 )
 
-subdir('src/libutil')
-# Load-bearing order. libstore depends on libutil.
-subdir('src/libstore')
-# libfetchers depends on libstore.
-subdir('src/libfetchers')
-# libexpr depends on libfetchers.
-subdir('src/libexpr')
-# libmain depends on libutil and libstore.
-subdir('src/libmain')
-# libcmd depends on everything
-subdir('src/libcmd')
+subdir('src')
