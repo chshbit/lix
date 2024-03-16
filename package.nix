@@ -7,7 +7,6 @@
   aws-sdk-cpp,
   boehmgc,
   nlohmann_json,
-  bison,
   changelog-d,
   boost,
   brotli,
@@ -16,7 +15,6 @@
   doxygen,
   editline,
   fileset,
-  flex,
   git,
   gtest,
   jq,
@@ -29,6 +27,7 @@
   mdbook-linkcheck,
   mercurial,
   openssl,
+  pegtl,
   pkg-config,
   rapidcheck,
   sqlite,
@@ -127,9 +126,6 @@ in stdenv.mkDerivation (finalAttrs: {
   dontBuild = false;
 
   nativeBuildInputs = [
-    bison
-    flex
-  ] ++ [
     (lib.getBin lowdown)
     mdbook
     mdbook-linkcheck
@@ -212,7 +208,8 @@ in stdenv.mkDerivation (finalAttrs: {
     ++ lib.optionals (finalAttrs.doCheck || internalApiDocs) testConfigureFlags
     ++ lib.optional (!canRunInstalled) "--disable-doc-gen"
     ++ [ (lib.enableFeature internalApiDocs "internal-api-docs") ]
-    ++ lib.optional (!forDevShell) "--sysconfdir=/etc";
+    ++ lib.optional (!forDevShell) "--sysconfdir=/etc"
+    ++ [ "PEGTL_HEADERS=${lib.getDev pegtl}/include" ];
 
   installTargets = lib.optional internalApiDocs "internal-api-html";
 
