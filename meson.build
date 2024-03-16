@@ -116,6 +116,18 @@ deps += lowdown
 bash = find_program('bash')
 lsof = find_program('lsof')
 
+# This is how Nix does generated headers...
+# FIXME(Qyriad): do we really need to use the shell for this?
+gen_header = generator(
+  bash,
+  arguments : [
+    '-c',
+    'echo \'R"foo(\' | cat - @INPUT@ && echo \')foo"\'',
+  ],
+  capture : true,
+  output : '@PLAINNAME@.gen.hh',
+)
+
 #
 # Configuration
 #

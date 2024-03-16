@@ -1,24 +1,5 @@
-schema_sql_gen = custom_target(
-  input : 'schema.sql',
-  output : 'schema.sql.gen.hh',
-  command : [
-    bash,
-    '-c',
-    'echo \'R"foo(\' | cat - @INPUT@ && echo \')foo"\'',
-  ],
-  capture : true,
-)
-
-ca_specific_schema = custom_target(
-  input : 'ca-specific-schema.sql',
-  output : 'ca-specific-schema.sql.gen.hh',
-  command : [
-    bash,
-    '-c',
-    'echo \'R"foo(\' | cat - @INPUT@ && echo \')foo"\'',
-  ],
-  capture : true,
-)
+schema_sql_gen = gen_header.process('schema.sql')
+ca_specific_schema_gen = gen_header.process('ca-specific-schema.sql')
 
 libstore_sources = files(
   'binary-cache-store.cc',
@@ -117,7 +98,7 @@ endforeach
 libstore = library(
   'nixstore',
   schema_sql_gen,
-  ca_specific_schema,
+  ca_specific_schema_gen,
   libstore_sources,
   dependencies : [
     libarchive,

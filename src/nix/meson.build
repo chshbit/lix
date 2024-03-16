@@ -1,24 +1,6 @@
-generate_manpage_gen = custom_target(
-  input : meson.project_source_root() / 'doc/manual/generate-manpage.nix',
-  output : 'generate-manpage.nix.gen.hh',
-  command : [
-    bash,
-    '-c',
-    'echo \'R"foo(\' | cat - @INPUT@ && echo \')foo"\'',
-  ],
-  capture : true,
-)
+generate_manpage_gen = gen_header.process(meson.project_source_root() / 'doc/manual/generate-manpage.nix')
 
-utils_gen = custom_target(
-  input : meson.project_source_root() / 'doc/manual/utils.nix',
-  output : 'utils.nix.gen.hh',
-  command : [
-    bash,
-    '-c',
-    'echo \'R"foo(\' | cat - @INPUT@ && echo \')foo"\'',
-  ],
-  capture : true,
-)
+utils_gen = gen_header.process(meson.project_source_root() / 'doc/manual/utils.nix')
 
 nix_sources = files(
   'add-to-store.cc',
