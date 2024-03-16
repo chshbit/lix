@@ -24,6 +24,7 @@
   libcpuid,
   libseccomp,
   libsodium,
+  lsof,
   lowdown,
   mdbook,
   mdbook-linkcheck,
@@ -138,6 +139,7 @@ in stdenv.mkDerivation (finalAttrs: {
     cmake
     meson
     ninja
+    lsof
   ] ++ lib.optional stdenv.hostPlatform.isLinux util-linuxMinimal
     ++ lib.optional (!officialRelease && buildUnreleasedNotes) changelog-d;
 

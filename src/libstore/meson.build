@@ -122,6 +122,7 @@ libstore = library(
   dependencies : [
     libarchive,
     liblixutil, # Internal.
+    seccomp,
     sqlite,
     sodium,
     curl,
