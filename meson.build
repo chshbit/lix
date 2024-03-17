@@ -1,9 +1,10 @@
 project('lix', 'cpp',
   version : run_command('bash', '-c', 'echo -n $(cat ./.version)$VERSION_SUFFIX', check : true).stdout().strip(),
   default_options : [
-    'buildtype=debugoptimized',
     'cpp_std=c++20',
     'warning_level=1',
+    'debug=true',
+    'optimization=3',
   ],
 )
 
@@ -206,6 +207,15 @@ add_project_arguments(
   '-Wno-unused-parameter',
   '-Wno-missing-field-initializers',
   '-Wno-deprecated-copy',
+  '-pthread',
+  #'-fPIC',
+  language : 'cpp',
+)
+
+# FIXME(Qyriad): only if not Darwin, Solaris, or FreeBSD
+# (...so only if Linux?)
+add_project_link_arguments(
+  '-Wl,--no-copy-dt-needed-entries',
   language : 'cpp',
 )
 

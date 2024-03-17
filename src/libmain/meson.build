@@ -7,7 +7,7 @@ libmain_sources = files(
 )
 
 libmain = library(
-  'main',
+  'nixmain',
   libmain_sources,
   dependencies : [
     liblixutil,
