@@ -87,3 +87,5 @@ liblixexpr = declare_dependency(
   include_directories : include_directories('.'),
   link_with : libexpr,
 )
+
+subdir('c')
