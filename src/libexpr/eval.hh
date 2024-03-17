@@ -36,7 +36,7 @@ enum RepairFlag : bool;
 /**
  * Function that implements a primop.
  */
-typedef void (* PrimOpFun) (EvalState & state, const PosIdx pos, Value * * args, Value & v);
+typedef std::function<void (EvalState &, const PosIdx, Value **, Value &)> PrimOpFun;
 
 /**
  * Info about a primitive operation, and its implementation
