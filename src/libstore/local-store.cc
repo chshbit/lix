@@ -1331,8 +1331,7 @@ StorePath LocalStore::addToStoreFromDump(Source & source0, std::string_view name
 
     if (!inMemory) {
         /* Drain what we pulled so far, and then keep on pulling */
-        StringSource dumpSource { dump };
-        ChainSource bothSource { dumpSource, source };
+        ChainSource bothSource { StringSource{dump}, std::move(source) };
 
         std::tie(tempDir, tempDirFd) = createTempDirInStore();
         delTempDir = std::make_unique<AutoDelete>(tempDir);

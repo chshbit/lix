@@ -306,18 +306,58 @@ struct LambdaSource : Source
 };
 
 /**
- * Chain two sources together so after the first is exhausted, the second is
- * used
+ * Chain a number of sources together, exhausting them all in turn.
  */
+template<typename... Sources>
+    requires (std::derived_from<Sources, Source> && ...)
 struct ChainSource : Source
 {
-    Source & source1, & source2;
-    bool useSecond = false;
-    ChainSource(Source & s1, Source & s2)
-        : source1(s1), source2(s2)
-    { }
+private:
+    std::tuple<Sources...> sources;
+    std::array<Source *, sizeof...(Sources)> ptrs;
+    size_t sourceIdx = 0;
 
-    size_t read(char * data, size_t len) override;
+    template<size_t... N>
+    void fillPtrs(std::index_sequence<N...>)
+    {
+        ((ptrs[N] = &std::get<N>(sources)), ...);
+    }
+
+public:
+    ChainSource(Sources && ... sources)
+        : sources(std::move(sources)...)
+    {
+        fillPtrs(std::index_sequence_for<Sources...>{});
+    }
+
+    ChainSource(ChainSource && other)
+        : sources(std::move(other.sources))
+        , sourceIdx(other.sourceIdx)
+    {
+        fillPtrs(std::index_sequence_for<Sources...>{});
+        other.sourceIdx = sizeof...(Sources);
+    }
+
+    ChainSource & operator=(ChainSource && other)
+    {
+        std::swap(sources, other.sources);
+        // since Sources... are the same the tuple type and offsets
+        // are the same, so pointers remain valid on both sides.
+        std::swap(sourceIdx, other.sourceIdx);
+        return *this;
+    }
+
+    size_t read(char * data, size_t len) override
+    {
+        if (sourceIdx == sizeof...(Sources))
+            throw EndOfFile("reached end of chained sources");
+        try {
+            return ptrs[sourceIdx]->read(data, len);
+        } catch (EndOfFile &) {
+            sourceIdx++;
+            return this->read(data, len);
+        }
+    }
 };
 
 std::unique_ptr<FinishSink> sourceToSink(std::function<void(Source &)> fun);
