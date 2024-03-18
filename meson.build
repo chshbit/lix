@@ -2,11 +2,38 @@ project('lix', 'cpp',
   version : run_command('bash', '-c', 'echo -n $(cat ./.version)$VERSION_SUFFIX', check : true).stdout().strip(),
   default_options : [
     'cpp_std=c++20',
+    # TODO(Qyriad): increase the warning level
     'warning_level=1',
     'debug=true',
     'optimization=2',
   ],
 )
+
+fs = import('fs')
+
+prefix = get_option('prefix')
+# For each of these paths, assume that it is relative to the prefix unless
+# it is already an absolute path (which is the default for store-dir, state-dir, and log-dir).
+path_opts = [
+  # Meson built-ins.
+  'datadir',
+  'sysconfdir',
+  'bindir',
+  'mandir',
+  # Homecooked Lix directories.
+  'store-dir',
+  'state-dir',
+  'log-dir',
+]
+foreach optname : path_opts
+  varname = optname.replace('-', '_')
+  path = get_option(optname)
+  if fs.is_absolute(path)
+    set_variable(varname, path)
+  else
+    set_variable(varname, prefix / path)
+  endif
+endforeach
 
 cxx = meson.get_compiler('cpp')
 
@@ -99,7 +126,7 @@ endif
 sqlite = dependency('sqlite3', 'sqlite', version : '>=3.6.19', required : true)
 deps += sqlite
 
-sodium = dependency('sodium', 'libsodium', required : true)
+sodium = dependency('libsodium', 'sodium', required : true)
 deps += sodium
 
 curl = dependency('libcurl', 'curl', required : true)
@@ -111,10 +138,28 @@ deps += editline
 lowdown = dependency('lowdown', version : '>=0.9.0', required : true)
 deps += lowdown
 
+rapidcheck = dependency('rapidcheck', required : false)
+deps += rapidcheck
+
+gtest = dependency('gtest', required : false)
+deps += gtest
+
 #
 # Build-time tools
 #
 bash = find_program('bash')
+sandbox_shell = get_option('sandbox-shell')
+# Consider it required if we're on Linux and the user explicitly specified a non-default value.
+sandbox_shell_required = sandbox_shell != 'busybox' and host_machine.system() == 'linux'
+# NOTE(Qyriad): package.nix puts busybox in buildInputs for Linux.
+# Most builds should not require setting this.
+busybox = find_program(sandbox_shell, required : sandbox_shell_required)
+if not busybox.found() and host_machine.system() == 'linux'
+  warning('busybox not found and other sandbox shell was specified')
+  warning('a sandbox shell is recommended on Linux -- configure with -Dsandbox-shell=/path/to/shell to set')
+endif
+# FIXME(Qyriad): the autoconf system checks that busybox has the "standalone" feature, indicating
+# that busybox sh won't run busybox applets as builtins (which would break out sandbox).
 lsof = find_program('lsof')
 
 # This is how Nix does generated headers...
@@ -202,19 +247,17 @@ add_project_arguments(
   # TODO(Qyriad): Yes this is how the autoconf+Make system did it.
   # I would love to remove this.
   '-include', 'config.h',
-  # TODO(Qyriad): would love to remove these
   '-Wno-deprecated-declarations',
-  '-Wno-unused-parameter',
-  '-Wno-missing-field-initializers',
-  '-Wno-deprecated-copy',
-  '-pthread',
-  #'-fPIC',
+  '-Wimplicit-fallthrough',
+  '-Werror=switch',
+  '-Werror=switch-enum',
   language : 'cpp',
 )
 
-# FIXME(Qyriad): only if not Darwin, Solaris, or FreeBSD
-# (...so only if Linux?)
 add_project_link_arguments(
+  '-pthread',
+  # FIXME(Qyriad): autoconf did this only if not Darwin, Solaris, or FreeBSD
+  # (...so only if Linux?)
   '-Wl,--no-copy-dt-needed-entries',
   language : 'cpp',
 )

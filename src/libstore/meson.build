@@ -69,22 +69,20 @@ all_sources += {
   'libstore': libstore_sources,
 }
 
-prefix = get_option('prefix')
-
+# These variables are created pseudo-dynamically, near the beginning of
+# the top-level meson.build. Aside from prefix itself, each of these was
+# made into an absolute path by joining it with prefix, unless it was already
+# an absolute path (which is the default for store-dir, state-dir, and log-dir).
 cpp_str_defines = {
   'LSOF': lsof.full_path(),
-  'NIX_PREFIX':    get_option('prefix'),
-  'NIX_STORE_DIR': get_option('store-dir'),
-  'NIX_DATA_DIR':  get_option('prefix') / 'share', # FIXME: make separately-configurable
-  #'NIX_STATE_DIR': get_option('prefix') / 'nix', # FIXME: same
-  'NIX_LOG_DIR':   get_option('prefix') / 'log' / 'nix', # FIXME: same
-  'NIX_CONF_DIR':  get_option('prefix') / 'etc', # FIXME: same
-  'NIX_BIN_DIR':   get_option('prefix') / 'bin', # FIXME: same
-  'NIX_MAN_DIR':   get_option('prefix') / 'share' / 'man', # FIXME: same
-}
-
-cpp_str_defines += {
-  'NIX_STATE_DIR': '/nix/var/nix',
+  'NIX_PREFIX':    prefix,
+  'NIX_STORE_DIR': store_dir,
+  'NIX_DATA_DIR':  datadir,
+  'NIX_STATE_DIR': state_dir,
+  'NIX_LOG_DIR':   log_dir,
+  'NIX_CONF_DIR':  sysconfdir,
+  'NIX_BIN_DIR':   bindir,
+  'NIX_MAN_DIR':   mandir,
 }
 
 cpp_args = []

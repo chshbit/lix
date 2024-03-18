@@ -81,17 +81,14 @@ libexpr = library(
     boehm,
     boost,
   ],
+  # for shared.hh
   include_directories : '../libmain',
-)
-
-liblixexpr = declare_dependency(
-  include_directories : include_directories('.'),
-  link_with : libexpr,
-)
-
-liblixexpr = declare_dependency(
-  include_directories : include_directories('.'),
-  link_with : libexpr,
+  cpp_args : [
+    # FIXME(Qyriad): can we please fix this. toml11 pls.
+    # Technically this only applies to fromTOML.cc, but, well
+    # https://github.com/mesonbuild/meson/issues/1367
+    '-Wno-error=switch-enum',
+  ]
 )
 
 liblixexpr = declare_dependency(

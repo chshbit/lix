@@ -173,7 +173,7 @@ in stdenv.mkDerivation (finalAttrs: {
     lowdown
     libsodium
   ]
-    ++ lib.optionals stdenv.isLinux [ libseccomp ]
+    ++ lib.optionals stdenv.isLinux [ libseccomp busybox-sandbox-shell ]
     ++ lib.optional stdenv.hostPlatform.isx86_64 libcpuid
     # There have been issues building these dependencies
     ++ lib.optional (stdenv.hostPlatform == stdenv.buildPlatform) aws-sdk-cpp-nix
