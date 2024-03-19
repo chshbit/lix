@@ -204,6 +204,11 @@
         # Binary package for various platforms.
         build = forAllSystems (system: self.packages.${system}.nix);
 
+        # FIXME(Qyriad): remove this when the migration to Meson has been completed.
+        mesonBuild = forAllSystems (system: self.packages.${system}.nix.override {
+          buildWithMeson = true;
+        });
+
         # Perl bindings for various platforms.
         perlBindings = forAllSystems (system: nixpkgsFor.${system}.native.nix.perl-bindings);
 
@@ -262,6 +267,8 @@
       };
 
       checks = forAllSystems (system: {
+        # FIXME(Qyriad): remove this when the migration to Meson has been completed.
+        mesonBuild = self.hydraJobs.mesonBuild.${system};
         binaryTarball = self.hydraJobs.binaryTarball.${system};
         perlBindings = self.hydraJobs.perlBindings.${system};
         nixpkgsLibTests = self.hydraJobs.tests.nixpkgsLibTests.${system};
@@ -321,7 +328,12 @@
                 ++ lib.optional (stdenv.cc.isClang && !stdenv.buildPlatform.isDarwin) pkgs.buildPackages.bear
                 ++ lib.optional
                   (stdenv.cc.isClang && stdenv.hostPlatform == stdenv.buildPlatform)
-                  pkgs.buildPackages.clang-tools;
+                  pkgs.buildPackages.clang-tools
+                ++ [
+                  # FIXME(Qyriad): remove once the migration to Meson is complete.
+                  pkgs.buildPackages.meson
+                  pkgs.buildPackages.ninja
+                ];
 
               src = null;
 
