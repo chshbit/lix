@@ -11,6 +11,7 @@
 #include "signals.hh"
 #include "finally.hh"
 #include "compression.hh"
+#include "overloaded.hh"
 
 #include <iostream>
 #include <algorithm>

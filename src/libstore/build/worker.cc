@@ -5,6 +5,7 @@
 #include "local-derivation-goal.hh"
 #include "signals.hh"
 #include "hook-instance.hh"
+#include "overloaded.hh"
 
 #include <poll.h>
 

@@ -10,6 +10,7 @@
 #include "../nix-env/user-env.hh"
 #include "profiles.hh"
 #include "names.hh"
+#include "overloaded.hh"
 
 #include <nlohmann/json.hpp>
 #include <regex>

@@ -1,4 +1,5 @@
 #include "derived-path-map.hh"
+#include "overloaded.hh"
 
 namespace nix {
 

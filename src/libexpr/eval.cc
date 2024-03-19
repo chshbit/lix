@@ -19,6 +19,7 @@
 #include "fetch-to-store.hh"
 #include "flake/flakeref.hh"
 #include "parser-tab.hh"
+#include "overloaded.hh"
 
 #include <algorithm>
 #include <chrono>

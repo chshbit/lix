@@ -3,6 +3,7 @@
 #include "eval.hh"
 #include "eval-inline.hh"
 #include "store-api.hh"
+#include "overloaded.hh"
 
 namespace nix::eval_cache {
 

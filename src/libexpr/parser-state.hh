@@ -2,6 +2,7 @@
 ///@file
 
 #include "eval.hh"
+#include "overloaded.hh"
 
 namespace nix {
 

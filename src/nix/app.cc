@@ -8,6 +8,7 @@
 #include "command.hh"
 #include "derivations.hh"
 #include "downstream-placeholder.hh"
+#include "overloaded.hh"
 
 namespace nix {
 

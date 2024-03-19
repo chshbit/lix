@@ -7,6 +7,7 @@
 #include "worker-protocol-impl.hh"
 #include "archive.hh"
 #include "path-info.hh"
+#include "overloaded.hh"
 
 #include <nlohmann/json.hpp>
 

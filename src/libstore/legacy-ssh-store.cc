@@ -10,6 +10,7 @@
 #include "ssh.hh"
 #include "derivations.hh"
 #include "callback.hh"
+#include "overloaded.hh"
 
 namespace nix {
 

@@ -1,5 +1,6 @@
 #include "downstream-placeholder.hh"
 #include "derivations.hh"
+#include "overloaded.hh"
 
 namespace nix {
 

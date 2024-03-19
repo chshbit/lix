@@ -1,5 +1,6 @@
 #include "installable-derived-path.hh"
 #include "derivations.hh"
+#include "overloaded.hh"
 
 namespace nix {
 

@@ -4,6 +4,7 @@
 #include "store-api.hh"
 #include "log-store.hh"
 #include "progress-bar.hh"
+#include "overloaded.hh"
 
 using namespace nix;
 

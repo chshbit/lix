@@ -5,6 +5,7 @@
 #include "nixexpr.hh"
 #include "profiles.hh"
 #include "repl.hh"
+#include "overloaded.hh"
 
 #include <nlohmann/json.hpp>
 

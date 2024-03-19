@@ -17,6 +17,7 @@
 #include "logging.hh"
 #include "callback.hh"
 #include "filetransfer.hh"
+#include "overloaded.hh"
 #include <nlohmann/json.hpp>
 
 namespace nix {

@@ -1,4 +1,5 @@
 #include "position.hh"
+#include "overloaded.hh"
 
 namespace nix {
 

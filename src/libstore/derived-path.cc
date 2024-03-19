@@ -1,5 +1,6 @@
 #include "derived-path.hh"
 #include "store-api.hh"
+#include "overloaded.hh"
 
 #include <nlohmann/json.hpp>
 

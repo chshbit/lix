@@ -15,6 +15,7 @@
 // FIXME this should not be here, see TODO below on
 // `addMultipleToStore`.
 #include "worker-protocol.hh"
+#include "overloaded.hh"
 
 #include <nlohmann/json.hpp>
 #include <regex>

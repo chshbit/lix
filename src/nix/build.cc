@@ -4,6 +4,7 @@
 #include "store-api.hh"
 #include "local-fs-store.hh"
 #include "progress-bar.hh"
+#include "overloaded.hh"
 
 #include <nlohmann/json.hpp>
 

@@ -15,6 +15,7 @@
 #include "value-to-xml.hh"
 #include "primops.hh"
 #include "fetch-to-store.hh"
+#include "overloaded.hh"
 
 #include <boost/container/small_vector.hpp>
 #include <nlohmann/json.hpp>

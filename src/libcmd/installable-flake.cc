@@ -17,6 +17,7 @@
 #include "url.hh"
 #include "registry.hh"
 #include "build-result.hh"
+#include "overloaded.hh"
 
 #include <regex>
 #include <queue>

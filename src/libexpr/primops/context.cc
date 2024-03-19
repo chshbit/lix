@@ -2,6 +2,7 @@
 #include "eval-inline.hh"
 #include "derivations.hh"
 #include "store-api.hh"
+#include "overloaded.hh"
 
 namespace nix {
 

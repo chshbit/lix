@@ -1,5 +1,6 @@
 #include "path-info.hh"
 #include "store-api.hh"
+#include "overloaded.hh"
 
 namespace nix {
 

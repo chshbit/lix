@@ -2,6 +2,7 @@
 #include "libexpr/print.hh"
 #include "debug-char.hh"
 #include "types.hh"
+#include "overloaded.hh"
 #include "util.hh"
 #include <iostream>
 #include <memory>

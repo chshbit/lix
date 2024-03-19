@@ -1,5 +1,6 @@
 #include "path-with-outputs.hh"
 #include "store-api.hh"
+#include "overloaded.hh"
 
 #include <regex>
 

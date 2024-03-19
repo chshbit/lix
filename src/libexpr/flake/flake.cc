@@ -8,6 +8,7 @@
 #include "fetchers.hh"
 #include "finally.hh"
 #include "fetch-settings.hh"
+#include "overloaded.hh"
 
 namespace nix {
 

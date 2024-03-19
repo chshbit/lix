@@ -8,6 +8,7 @@
 #include "callback.hh"
 #include "closure.hh"
 #include "filetransfer.hh"
+#include "overloaded.hh"
 
 namespace nix {
 

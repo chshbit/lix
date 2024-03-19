@@ -16,6 +16,7 @@
 #include "cgroup.hh"
 #include "personality.hh"
 #include "namespaces.hh"
+#include "overloaded.hh"
 
 #include <regex>
 #include <queue>

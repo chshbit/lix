@@ -13,6 +13,7 @@
 #include "archive.hh"
 #include "derivations.hh"
 #include "args.hh"
+#include "overloaded.hh"
 
 namespace nix::daemon {
 
