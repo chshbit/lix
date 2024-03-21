@@ -18,6 +18,7 @@ libutil-tests_EXTRA_INCLUDES = \
 
 libutil-tests_CXXFLAGS += $(libutil-tests_EXTRA_INCLUDES)
 
-libutil-tests_LIBS = libutil-test-support libutil
+# libexpr is needed for exception serialization tests. sigh.
+libutil-tests_LIBS = libutil-test-support libutil libexpr
 
 libutil-tests_LDFLAGS := -lrapidcheck $(GTEST_LIBS)
