@@ -56,13 +56,13 @@ namespace nix {
  *   `+` denotes string concatenation.
  * ```
  */
-void dumpPath(const Path & path, Sink & sink,
+WireFormatGenerator dumpPath(const Path & path,
     PathFilter & filter = defaultPathFilter);
 
 /**
  * Same as dumpPath(), but returns the last modified date of the path.
  */
-time_t dumpPathAndGetMtime(const Path & path, Sink & sink,
+WireFormatGenerator dumpPathAndGetMtime(const Path & path, time_t & mtime,
     PathFilter & filter = defaultPathFilter);
 
 /**
@@ -70,7 +70,7 @@ time_t dumpPathAndGetMtime(const Path & path, Sink & sink,
  *
  * @param s Contents of the file.
  */
-void dumpString(std::string_view s, Sink & sink);
+WireFormatGenerator dumpString(std::string_view s);
 
 /**
  * \todo Fix this API, it sucks.

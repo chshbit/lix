@@ -672,7 +672,7 @@ static void opDump(Strings opFlags, Strings opArgs)
 
     FdSink sink(STDOUT_FILENO);
     std::string path = *opArgs.begin();
-    dumpPath(path, sink);
+    sink << dumpPath(path);
     sink.flush();
 }
 

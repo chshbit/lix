@@ -5,6 +5,7 @@
 #include "fs-accessor.hh"
 #include "globals.hh"
 #include "nar-info.hh"
+#include "serialise.hh"
 #include "sync.hh"
 #include "remote-fs-accessor.hh"
 #include "nar-info-disk-cache.hh"
@@ -413,16 +414,14 @@ StorePath BinaryCacheStore::addToStore(
 
     HashSink sink { hashAlgo };
     if (method == FileIngestionMethod::Recursive) {
-        dumpPath(srcPath, sink, filter);
+        sink << dumpPath(srcPath, filter);
     } else {
         readFile(srcPath, sink);
     }
     auto h = sink.finish().first;
 
-    auto source = sinkToSource([&](Sink & sink) {
-        dumpPath(srcPath, sink, filter);
-    });
-    return addToStoreCommon(*source, repair, CheckSigs, [&](HashResult nar) {
+    auto source = WireSource{dumpPath(srcPath, filter)};
+    return addToStoreCommon(source, repair, CheckSigs, [&](HashResult nar) {
         ValidPathInfo info {
             *this,
             name,
@@ -455,7 +454,7 @@ StorePath BinaryCacheStore::addTextToStore(
         return path;
 
     StringSink sink;
-    dumpString(s, sink);
+    sink << dumpString(s);
     StringSource source(sink.s);
     return addToStoreCommon(source, repair, CheckSigs, [&](HashResult nar) {
         ValidPathInfo info {

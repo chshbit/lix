@@ -88,7 +88,7 @@ struct CmdHashBase : Command
                 readFile(path, *hashSink);
                 break;
             case FileIngestionMethod::Recursive:
-                dumpPath(path, *hashSink);
+                *hashSink << dumpPath(path);
                 break;
             }
 

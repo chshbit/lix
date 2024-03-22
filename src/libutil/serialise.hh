@@ -385,6 +385,30 @@ inline void drainGenerator(WireFormatGenerator g, std::derived_from<Sink> auto &
     }
 }
 
+struct WireSource : Source
+{
+    WireSource(WireFormatGenerator && g) : g(std::move(g)) {}
+
+    virtual size_t read(char * data, size_t len)
+    {
+        while (!buf.size() && g) {
+            buf = g();
+        }
+        if (!buf.size()) {
+            throw EndOfFile("coroutine has finished");
+        }
+
+        len = std::min(len, buf.size());
+        memcpy(data, buf.data(), len);
+        buf = buf.subspan(len);
+        return len;
+    }
+
+private:
+    WireFormatGenerator g;
+    std::span<const char> buf{};
+};
+
 struct SerializingTransform
 {
     std::array<char, 8> buf;
@@ -405,6 +429,19 @@ struct SerializingTransform
         buf[6] = (n >> 48) & 0xff;
         buf[7] = (unsigned char) (n >> 56) & 0xff;
         return {buf.begin(), 8};
+    }
+
+    static std::span<const char> padding(size_t unpadded)
+    {
+        return std::span("\0\0\0\0\0\0\0", unpadded % 8 ? 8 - unpadded % 8 : 0);
+    }
+
+    // opt in to generator chaining. without this co_yielding
+    // another generator of any type will cause a type error.
+    template<typename TF>
+    auto operator()(Generator<std::span<const char>, TF> && g)
+    {
+        return std::move(g);
     }
 
     // only choose this for *exactly* char spans, do not allow implicit

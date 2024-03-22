@@ -56,7 +56,7 @@ struct CmdDumpPath2 : Command
     void run() override
     {
         FdSink sink(STDOUT_FILENO);
-        dumpPath(path, sink);
+        sink << dumpPath(path);
         sink.flush();
     }
 };

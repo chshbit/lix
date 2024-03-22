@@ -3,6 +3,7 @@
 #include "globals.hh"
 #include "derivations.hh"
 #include "store-api.hh"
+#include "serialise.hh"
 #include "util.hh"
 #include "nar-info-disk-cache.hh"
 #include "thread-pool.hh"
@@ -272,7 +273,7 @@ StorePath Store::addToStore(
     Path srcPath(absPath(_srcPath));
     auto source = sinkToSource([&](Sink & sink) {
         if (method == FileIngestionMethod::Recursive)
-            dumpPath(srcPath, sink, filter);
+            sink << dumpPath(srcPath, filter);
         else
             readFile(srcPath, sink);
     });
@@ -421,13 +422,11 @@ ValidPathInfo Store::addToStoreSlow(std::string_view name, const Path & srcPath,
     /* Functionally, this means that fileSource will yield the content of
        srcPath. The fact that we use scratchpadSink as a temporary buffer here
        is an implementation detail. */
-    auto fileSource = sinkToSource([&](Sink & scratchpadSink) {
-        dumpPath(srcPath, scratchpadSink);
-    });
+    auto fileSource = WireSource{dumpPath(srcPath)};
 
     /* tapped provides the same data as fileSource, but we also write all the
        information to narSink. */
-    TeeSource tapped { *fileSource, narSink };
+    TeeSource tapped { fileSource, narSink };
 
     ParseSink blank;
     auto & parseSink = method == FileIngestionMethod::Flat
@@ -462,10 +461,8 @@ ValidPathInfo Store::addToStoreSlow(std::string_view name, const Path & srcPath,
     info.narSize = narSize;
 
     if (!isValidPath(info.path)) {
-        auto source = sinkToSource([&](Sink & scratchpadSink) {
-            dumpPath(srcPath, scratchpadSink);
-        });
-        addToStore(info, *source);
+        auto source = WireSource{dumpPath(srcPath)};
+        addToStore(info, source);
     }
 
     return info;

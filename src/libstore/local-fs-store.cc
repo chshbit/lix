@@ -82,7 +82,7 @@ void LocalFSStore::narFromPath(const StorePath & path, Sink & sink)
 {
     if (!isValidPath(path))
         throw Error("path '%s' is not valid", printStorePath(path));
-    dumpPath(getRealStoreDir() + std::string(printStorePath(path), storeDir.size()), sink);
+    sink << dumpPath(getRealStoreDir() + std::string(printStorePath(path), storeDir.size()));
 }
 
 const std::string LocalFSStore::drvsLogDir = "drvs";

@@ -371,7 +371,7 @@ HashResult hashPath(
     HashType ht, const Path & path, PathFilter & filter)
 {
     HashSink sink(ht);
-    dumpPath(path, sink, filter);
+    sink << dumpPath(path, filter);
     return sink.finish();
 }
 
