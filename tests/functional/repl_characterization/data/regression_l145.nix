@@ -1,5 +1,5 @@
 with { inherit ({}) invalid; };
 let
-  x = builtins.break 1;
+  puppy = "doggy";
 in
-  x
+  builtins.break { }
