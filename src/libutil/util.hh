@@ -163,7 +163,7 @@ unsigned char getFileType(const Path & path);
  */
 std::string readFile(int fd);
 std::string readFile(const Path & path);
-void readFile(const Path & path, Sink & sink);
+Generator<std::span<const char>> readFileSource(const Path & path);
 
 /**
  * Write a string to a file.

@@ -366,12 +366,12 @@ std::string readFile(const Path & path)
 }
 
 
-void readFile(const Path & path, Sink & sink)
+Generator<std::span<const char>> readFileSource(const Path & path)
 {
     AutoCloseFD fd{open(path.c_str(), O_RDONLY | O_CLOEXEC)};
     if (!fd)
         throw SysError("opening file '%s'", path);
-    drainGenerator(drainFDSource(fd.get()), sink);
+    co_yield drainFDSource(fd.get());
 }
 
 

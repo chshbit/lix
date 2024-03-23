@@ -271,13 +271,12 @@ StorePath Store::addToStore(
     const StorePathSet & references)
 {
     Path srcPath(absPath(_srcPath));
-    auto source = sinkToSource([&](Sink & sink) {
-        if (method == FileIngestionMethod::Recursive)
-            sink << dumpPath(srcPath, filter);
-        else
-            readFile(srcPath, sink);
-    });
-    return addToStoreFromDump(*source, name, method, hashAlgo, repair, references);
+    auto source = WireSource{
+        method == FileIngestionMethod::Recursive
+        ? static_cast<Generator<std::span<const char>, void>>(dumpPath(srcPath, filter))
+        : readFileSource(srcPath)
+    };
+    return addToStoreFromDump(source, name, method, hashAlgo, repair, references);
 }
 
 void Store::addMultipleToStore(

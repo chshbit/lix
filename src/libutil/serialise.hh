@@ -388,7 +388,8 @@ void drainGenerator(Generator<std::span<const char>, T> g, std::derived_from<Sin
 
 struct WireSource : Source
 {
-    WireSource(WireFormatGenerator && g) : g(std::move(g)) {}
+    template<typename F>
+    explicit WireSource(Generator<std::span<const char>, F> g) : g(std::move(g)) {}
 
     virtual size_t read(char * data, size_t len)
     {
@@ -406,7 +407,7 @@ struct WireSource : Source
     }
 
 private:
-    WireFormatGenerator g;
+    Generator<std::span<const char>, void> g;
     std::span<const char> buf{};
 };
 

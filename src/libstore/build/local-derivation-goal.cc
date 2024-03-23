@@ -2454,7 +2454,7 @@ SingleDrvOutputs LocalDerivationGoal::registerOutputs()
             HashModuloSink caSink { outputHash.hashType, oldHashPart };
             std::visit(overloaded {
                 [&](const TextIngestionMethod &) {
-                    readFile(actualPath, caSink);
+                    caSink << readFileSource(actualPath);
                 },
                 [&](const FileIngestionMethod & m2) {
                     switch (m2) {
@@ -2462,7 +2462,7 @@ SingleDrvOutputs LocalDerivationGoal::registerOutputs()
                         caSink << dumpPath(actualPath);
                         break;
                     case FileIngestionMethod::Flat:
-                        readFile(actualPath, caSink);
+                        caSink << readFileSource(actualPath);
                         break;
                     }
                 },

@@ -10,29 +10,40 @@
 namespace nix {
 
 template<typename T, typename Transform = std::identity>
-struct Generator : private Generator<T, void>
+struct Generator
 {
     struct promise_type;
     using handle_type = std::coroutine_handle<promise_type>;
 
-    explicit Generator(handle_type h) : Generator<T, void>{h, h.promise().state} {}
+    explicit Generator(handle_type h) : impl{h, h.promise().state} {}
 
-    using Generator<T, void>::operator bool;
-    using Generator<T, void>::operator();
+    explicit operator bool()
+    {
+        return bool(impl);
+    }
+    T operator()()
+    {
+        return impl();
+    }
 
     operator Generator<T, void> &() &
     {
-        return *this;
+        return impl;
     }
     operator Generator<T, void>() &&
     {
-        return std::move(*this);
+        return std::move(impl);
     }
+
+private:
+    Generator<T, void> impl;
 };
 
 template<typename T>
 struct Generator<T, void>
 {
+    template<typename, typename>
+    friend struct Generator;
     template<typename T2, typename Transform>
     friend struct Generator<T2, Transform>::promise_type;
 
