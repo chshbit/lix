@@ -371,7 +371,7 @@ void readFile(const Path & path, Sink & sink)
     AutoCloseFD fd{open(path.c_str(), O_RDONLY | O_CLOEXEC)};
     if (!fd)
         throw SysError("opening file '%s'", path);
-    drainFD(fd.get(), sink);
+    drainGenerator(drainFDSource(fd.get()), sink);
 }
 
 
@@ -722,12 +722,12 @@ std::string drainFD(int fd, bool block, const size_t reserveSize)
     // the parser needs two extra bytes to append terminating characters, other users will
     // not care very much about the extra memory.
     StringSink sink(reserveSize + 2);
-    drainFD(fd, sink, block);
+    sink << drainFDSource(fd, block);
     return std::move(sink.s);
 }
 
 
-void drainFD(int fd, Sink & sink, bool block)
+Generator<std::span<const char>> drainFDSource(int fd, bool block)
 {
     // silence GCC maybe-uninitialized warning in finally
     int saved = 0;
@@ -756,7 +756,7 @@ void drainFD(int fd, Sink & sink, bool block)
                 throw SysError("reading from file");
         }
         else if (rd == 0) break;
-        else sink({(char *) buf.data(), (size_t) rd});
+        else co_yield std::span{(char *) buf.data(), (size_t) rd};
     }
 }
 
@@ -1281,7 +1281,7 @@ void runProgram2(const RunOptions & options)
     }
 
     if (options.standardOut)
-        drainFD(out.readSide.get(), *options.standardOut);
+        *options.standardOut << drainFDSource(out.readSide.get());
 
     /* Wait for the child to finish. */
     int status = pid.wait();

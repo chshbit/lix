@@ -377,7 +377,8 @@ std::unique_ptr<Source> sinkToSource(
 struct SerializingTransform;
 using WireFormatGenerator = Generator<std::span<const char>, SerializingTransform>;
 
-inline void drainGenerator(WireFormatGenerator g, std::derived_from<Sink> auto & into)
+template<typename T>
+void drainGenerator(Generator<std::span<const char>, T> g, std::derived_from<Sink> auto & into)
 {
     while (g) {
         auto bit = g();
@@ -459,7 +460,8 @@ struct SerializingTransform
     WireFormatGenerator operator()(const Error & s);
 };
 
-inline Sink & operator<<(Sink & sink, WireFormatGenerator && g)
+template<typename Transform>
+inline Sink & operator<<(Sink & sink, Generator<std::span<const char>, Transform> && g)
 {
     while (g) {
         auto bit = g();

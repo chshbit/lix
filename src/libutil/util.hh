@@ -1,6 +1,7 @@
 #pragma once
 ///@file
 
+#include "generator.hh"
 #include "types.hh"
 #include "error.hh"
 #include "logging.hh"
@@ -296,7 +297,7 @@ MakeError(EndOfFile, Error);
  */
 std::string drainFD(int fd, bool block = true, const size_t reserveSize=0);
 
-void drainFD(int fd, Sink & sink, bool block = true);
+Generator<std::span<const char>> drainFDSource(int fd, bool block = true);
 
 /**
  * If cgroups are active, attempt to calculate the number of CPUs available.
