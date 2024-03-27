@@ -2,10 +2,15 @@ let
   inherit (builtins) concatStringsSep attrValues mapAttrs;
   inherit (import ./utils.nix) optionalString squash;
 in
-
 builtinsInfo:
 let
-  showBuiltin = name: { doc, type, impure-only }:
+  showBuiltin =
+    name:
+    {
+      doc,
+      type,
+      impure-only,
+    }:
     let
       type' = optionalString (type != null) " (${type})";
 

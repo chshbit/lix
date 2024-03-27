@@ -1,1 +1,4 @@
-[formatter]
+[formatter.nix]
+command = "nixfmt"
+includes = ["*.nix"]
+excludes = ["tests/**"]

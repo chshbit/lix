@@ -2,10 +2,16 @@ let
   inherit (builtins) concatStringsSep attrValues mapAttrs;
   inherit (import ./utils.nix) optionalString squash;
 in
-
 builtinsInfo:
 let
-  showBuiltin = name: { doc, args, arity, experimental-feature }:
+  showBuiltin =
+    name:
+    {
+      doc,
+      args,
+      arity,
+      experimental-feature,
+    }:
     let
       experimentalNotice = optionalString (experimental-feature != null) ''
         This function is only available if the [${experimental-feature}](@docroot@/contributing/experimental-features.md#xp-feature-${experimental-feature}) experimental feature is enabled.
