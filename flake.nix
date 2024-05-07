@@ -503,6 +503,13 @@
                     if ! [[ -f .nocontribmsg ]]; then
                       cat ${contribNotice}
                     fi
+
+                    # Install the Gerrit commit-msg hook.
+                    if [[ ! -f .git/hooks/commit-msg ]]; then
+                      mkdir -p .git/hooks
+                      curl -s -Lo .git/hooks/commit-msg https://gerrit.lix.systems/tools/hooks/commit-msg
+                      chmod u+x .git/hooks/commit-msg
+                    fi
                   '';
                 }
                 // lib.optionalAttrs (stdenv.buildPlatform.isLinux && pkgs.glibcLocales != null) {
