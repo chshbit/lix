@@ -6,7 +6,13 @@ shopt -s inherit_errexit
 scriptdir=$(cd "$(dirname -- "$0")" ; pwd -P)
 cd "$scriptdir/.."
 
-if [[ $# -lt 2 ]]; then
+benchSepIx=0
+for arg in "${@}"; do
+    if [[ "$arg" == "--" ]]; then break; fi
+    benchSepIx=$((benchSepIx+1))
+done
+
+if [[ $# -lt 2 ]] || [[ $benchSepIx -lt 2 ]]; then
     # FIXME(jade): it is a reasonable use case to want to run a benchmark run
     # on just one build. However, since we are using hyperfine in comparison
     # mode, we would have to combine the JSON ourselves to support that, which
@@ -14,7 +20,7 @@ if [[ $# -lt 2 ]]; then
     # not-bash.
     echo "Fewer than two result dirs given, nothing to compare!" >&2
     echo "Pass some directories (with names indicating which alternative they are) with bin/nix in them" >&2
-    echo "Usage: ./bench/bench.sh result-1 result-2 [result-3...]" >&2
+    echo "Usage: ./bench/bench.sh result-1 result-2 [result-3...] [--] [bench-1...]" >&2
     exit 1
 fi
 
@@ -28,7 +34,8 @@ export NIX_REMOTE="$(mktemp -d)"
 _exit='rm -rfv "$NIX_REMOTE"; $_exit'
 export NIX_PATH="nixpkgs=bench/nixpkgs:nixos-config=bench/configuration.nix"
 
-builds=("$@")
+builds=("${@:1:$benchSepIx}")
+benchsFromArgs=("${@:$((benchSepIx+2))}")
 
 flake_args="--extra-experimental-features 'nix-command flakes'"
 
@@ -45,12 +52,15 @@ cases=(
     [parse]="{BUILD}/bin/nix $flake_args eval -f bench/nixpkgs/pkgs/development/haskell-modules/hackage-packages.nix"
 )
 
-benches=(
+defaultBenches=(
     rebuild
     rebuild-lh
     search
     parse
 )
+
+
+benches=("${benchsFromArgs[@]:-${defaultBenches[@]}}")
 
 for k in "${benches[@]}"; do
     taskset -c 2,3 \
