@@ -94,6 +94,14 @@ static const char * makeImmutableString(std::string_view s)
     return t;
 }
 
+static Value::StringMeta * makeStringMeta(size_t size, const char * * context)
+{
+    auto meta = (Value::StringMeta *) allocBytes(sizeof(Value::StringMeta));
+    meta->size = size;
+    meta->context = context;
+    return meta;
+}
+
 
 RootValue allocRootValue(Value * v)
 {
@@ -157,7 +165,10 @@ std::string showType(const Value & v)
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wswitch-enum"
     switch (v.internalType) {
-        case tString: return v.string.context ? "a string with context" : "a string";
+        case tStringEmpty: return v.stringContext() ? "a string with context" : "a string";
+        case tStringUnknownSize: return "a string";
+        case tStringKnownSize: return "a string";
+        case tStringWithContext: return "a string with context";
         case tPrimOp:
             return fmt("the built-in function '%s'", std::string(v.primOp->name));
         case tPrimOpApp:
@@ -877,34 +888,41 @@ DebugTraceStacker::DebugTraceStacker(EvalState & evalState, DebugTrace t)
         evalState.runDebugRepl(nullptr, trace.env, trace.expr);
 }
 
-void Value::mkString(std::string_view s)
+void Value::mkString(const char * s, size_t size, const char * * context)
 {
-    mkString(makeImmutableString(s));
+
+    if (size == 0) {
+        mkEmptyString(context);
+    } else if (! context) {
+        mkStringKnownSize(s, size);
+    } else {
+        mkStringWithContext(s, makeStringMeta(size, context));
+    }
 }
 
-
-static void copyContextToValue(Value & v, const NixStringContext & context)
+void Value::mkString(std::string_view s)
 {
-    if (!context.empty()) {
-        size_t n = 0;
-        v.string.context = (const char * *)
-            allocBytes((context.size() + 1) * sizeof(char *));
-        for (auto & i : context)
-            v.string.context[n++] = dupString(i.to_string().c_str());
-        v.string.context[n] = 0;
-    }
+    mkString(makeImmutableString(s), s.size());
 }
 
 void Value::mkString(std::string_view s, const NixStringContext & context)
 {
-    mkString(s);
-    copyContextToValue(*this, context);
+    mkStringMove(makeImmutableString(s), s.size(), context);
 }
 
-void Value::mkStringMove(const char * s, const NixStringContext & context)
+void Value::mkStringMove(const char * s, size_t size, const NixStringContext & context)
 {
-    mkString(s);
-    copyContextToValue(*this, context);
+    if (context.empty())
+        mkString(s, size);
+    else {
+        auto vContext = (const char * *) allocBytes((context.size() + 1) * sizeof(char *));
+        mkString(s, size, vContext);
+
+        size_t n = 0;
+        for (auto & i : context)
+            vContext[n++] = dupString(i.to_string().c_str());
+        vContext[n] = 0;
+    }
 }
 
 
@@ -2091,8 +2109,9 @@ void ExprConcatStrings::eval(EvalState & state, Env & env, Value & v)
         if (!context.empty())
             state.error<EvalError>("a string that refers to a store path cannot be appended to a path").atPos(pos).withFrame(env, *this).debugThrow();
         v.mkPath(CanonPath(canonPath(str())));
-    } else
-        v.mkStringMove(c_str(), context);
+    } else {
+        v.mkStringMove(c_str(), sSize, context);
+    }
 }
 
 

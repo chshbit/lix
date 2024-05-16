@@ -23,7 +23,10 @@ class BindingsBuilder;
 typedef enum {
     tInt = 1,
     tBool,
-    tString,
+    tStringEmpty,
+    tStringUnknownSize,
+    tStringKnownSize,
+    tStringWithContext,
     tPath,
     tNull,
     tAttrs,
@@ -159,6 +162,13 @@ public:
     inline bool isPrimOp() const { return internalType == tPrimOp; };
     inline bool isPrimOpApp() const { return internalType == tPrimOpApp; };
 
+    // Widening Value kills eval performace so we use an extra indirection
+    // to carry more metadata.
+    struct StringMeta {
+        size_t size;
+        const char * * context; // must be in sorted order, see note below
+    };
+
     union
     {
         NixInt integer;
@@ -186,10 +196,29 @@ public:
 
          * For canonicity, the store paths should be in sorted order.
          */
+
+        // When a string is empty we can store the context directly.
+        struct {
+            const char * * context;
+        } emptyString;
+
+        // When the context is empty, we can use the InternalType
+        // to be lazy about calculating the size of the string.
         struct {
             const char * s;
-            const char * * context; // must be in sorted order
-        } string;
+        } stringUnknownSize;
+        struct {
+            const char * s;
+            size_t size;
+        } stringKnownSize;
+
+        // We happen to always have a size available when we're
+        // constucting a string with context. If this changes
+        // use the same trick as for strings without context.
+        struct {
+            const char * s;
+            const StringMeta * meta;
+        } stringWithContext;
 
         const char * _path;
         Bindings * attrs;
@@ -229,7 +258,7 @@ public:
         switch (internalType) {
             case tInt: return nInt;
             case tBool: return nBool;
-            case tString: return nString;
+            case tStringEmpty: case tStringUnknownSize: case tStringKnownSize: case tStringWithContext: return nString;
             case tPath: return nPath;
             case tNull: return nNull;
             case tAttrs: return nAttrs;
@@ -268,22 +297,55 @@ public:
         boolean = b;
     }
 
-    inline void mkString(const char * s, const char * * context = 0)
+    inline void mkEmptyString(const char * * context = 0)
     {
-        internalType = tString;
-        string.s = s;
-        string.context = context;
+        clearValue();
+        internalType = tStringEmpty;
+        emptyString.context = context;
+    }
+
+    inline void mkStringUnknownSize(const char * s)
+    {
+        clearValue();
+        internalType = tStringUnknownSize;
+        stringUnknownSize.s = s;
+    }
+
+    inline void mkStringKnownSize(const char * s, size_t size)
+    {
+        internalType = tStringKnownSize;
+        stringKnownSize.s = s;
+        stringKnownSize.size = size;
+    }
+
+    inline void mkStringWithContext(const char * s, StringMeta * meta)
+    {
+        internalType = tStringWithContext;
+        stringWithContext.s = s;
+        stringWithContext.meta = meta;
+    }
+
+    void mkString(const char * s, size_t size, const char * * context = 0);
+
+    // Don't change this proto. You'll get upcast to string_view and kill the gc.
+    inline void mkString(const char * s)
+    {
+        if (s[0] == '\0')
+            mkEmptyString();
+        else
+            mkStringUnknownSize(s);
     }
 
     void mkString(std::string_view s);
 
     void mkString(std::string_view s, const NixStringContext & context);
 
-    void mkStringMove(const char * s, const NixStringContext & context);
+    void mkStringMove(const char * s, size_t size, const NixStringContext & context);
 
-    inline void mkString(const Symbol & s)
+    inline void mkString(const Symbol & sym)
     {
-        mkString(((const std::string &) s).c_str());
+        auto s = (const std::string &) sym;
+        mkString(s.c_str(), s.size());
     }
 
     void mkPath(const SourcePath & path);
@@ -444,7 +506,10 @@ public:
     const char * c_str() const
     {
         switch(internalType) {
-            case tString: return string.s;
+            case tStringEmpty: return "";
+            case tStringUnknownSize: return stringUnknownSize.s;
+            case tStringKnownSize: return stringKnownSize.s;
+            case tStringWithContext: return stringWithContext.s;
             default: abort();
         }
     }
@@ -452,7 +517,12 @@ public:
     std::string_view str()
     {
         switch(internalType) {
-            case tString: return std::string_view(string.s);
+            case tStringEmpty: return std::string_view("");
+            case tStringUnknownSize:
+                mkStringKnownSize(stringUnknownSize.s, strlen(stringUnknownSize.s));
+                return std::string_view(stringKnownSize.s, stringKnownSize.size);
+            case tStringKnownSize: return std::string_view(stringKnownSize.s, stringKnownSize.size);
+            case tStringWithContext: return std::string_view(stringWithContext.s, stringWithContext.meta->size);
             default: abort();
         }
     }
@@ -460,7 +530,10 @@ public:
     const char * * stringContext() const
     {
         switch(internalType) {
-            case tString: return string.context;
+            case tStringEmpty: return emptyString.context;
+            case tStringUnknownSize: return 0;
+            case tStringKnownSize: return 0;
+            case tStringWithContext: return stringWithContext.meta->context;
             default: abort();
         }
     }
