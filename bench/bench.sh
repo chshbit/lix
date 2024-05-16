@@ -50,6 +50,10 @@ cases=(
     [rebuild]="{BUILD}/bin/nix $flake_args eval --raw --impure --expr 'with import <nixpkgs/nixos> {}; system'"
     [rebuild-lh]="GC_INITIAL_HEAP_SIZE=10g {BUILD}/bin/nix eval $flake_args --raw --impure --expr 'with import <nixpkgs/nixos> {}; system'"
     [parse]="{BUILD}/bin/nix $flake_args eval -f bench/nixpkgs/pkgs/development/haskell-modules/hackage-packages.nix"
+    [substr100k]="{BUILD}/bin/nix eval --no-eval-cache -f bench/substring.nix --apply 'f: f.bench 100000'"
+    [substr200k]="{BUILD}/bin/nix eval --no-eval-cache -f bench/substring.nix --apply 'f: f.bench 200000'"
+    [substr300k]="{BUILD}/bin/nix eval --no-eval-cache -f bench/substring.nix --apply 'f: f.bench 300000'"
+    [substr400k]="{BUILD}/bin/nix eval --no-eval-cache -f bench/substring.nix --apply 'f: f.bench 400000'"
 )
 
 defaultBenches=(
