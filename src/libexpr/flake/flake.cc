@@ -122,7 +122,7 @@ static FlakeInput parseFlakeInput(EvalState & state,
                 input.overrides = parseFlakeInputs(state, attr.value, attr.pos, baseDir, lockRootPath, depth + 1);
             } else if (attr.name == sFollows) {
                 expectType(state, nString, *attr.value, attr.pos);
-                auto follows(parseInputPath(attr.value->c_str()));
+                auto follows(parseInputPath(attr.value->str()));
                 follows.insert(follows.begin(), lockRootPath.begin(), lockRootPath.end());
                 input.follows = follows;
             } else {

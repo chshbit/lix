@@ -264,7 +264,7 @@ static Symbol getName(const AttrName & name, EvalState & state, Env & env)
         Value nameValue;
         name.expr->eval(state, env, nameValue);
         state.forceStringNoCtx(nameValue, name.expr->getPos(), "while evaluating an attribute name");
-        return state.symbols.create(nameValue.c_str());
+        return state.symbols.create(nameValue.str());
     }
 }
 
@@ -1348,7 +1348,7 @@ void ExprAttrs::eval(EvalState & state, Env & env, Value & v)
         if (nameVal.type() == nNull)
             continue;
         state.forceStringNoCtx(nameVal, i.pos, "while evaluating the name of a dynamic attribute");
-        auto nameSym = state.symbols.create(nameVal.c_str());
+        auto nameSym = state.symbols.create(nameVal.str());
         Bindings::iterator j = v.attrs->find(nameSym);
         if (j != v.attrs->end())
             state.error<EvalError>("dynamic attribute '%1%' already defined at %2%", state.symbols[nameSym], state.positions[j->pos]).atPos(i.pos).withFrame(env, *this).debugThrow();

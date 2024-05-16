@@ -2590,7 +2590,7 @@ static void prim_removeAttrs(EvalState & state, const PosIdx pos, Value * * args
     names.reserve(args[1]->listSize());
     for (auto elem : args[1]->listItems()) {
         state.forceStringNoCtx(*elem, pos, "while evaluating the values of the second argument passed to builtins.removeAttrs");
-        names.emplace_back(state.symbols.create(elem->c_str()), nullptr);
+        names.emplace_back(state.symbols.create(elem->str()), nullptr);
     }
     std::sort(names.begin(), names.end());
 
