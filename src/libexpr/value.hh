@@ -437,11 +437,35 @@ public:
         return SourcePath{CanonPath(_path)};
     }
 
-    std::string_view str() const
+// Allow selecting a subset of enum values
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+
+    const char * c_str() const
     {
-        assert(internalType == tString);
-        return std::string_view(string.s);
+        switch(internalType) {
+            case tString: return string.s;
+            default: abort();
+        }
     }
+
+    std::string_view str()
+    {
+        switch(internalType) {
+            case tString: return std::string_view(string.s);
+            default: abort();
+        }
+    }
+
+    const char * * stringContext() const
+    {
+        switch(internalType) {
+            case tString: return string.context;
+            default: abort();
+        }
+    }
+
+#pragma GCC diagnostic pop
 };
 
 

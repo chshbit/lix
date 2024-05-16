@@ -200,7 +200,7 @@ private:
     {
         escapeString(
             output,
-            v.string.s,
+            v.c_str(),
             {
                 .maxLength = options.maxStringLength,
                 .outputAnsiColors = options.ansiColors,

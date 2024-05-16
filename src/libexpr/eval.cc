@@ -253,7 +253,7 @@ static Symbol getName(const AttrName & name, EvalState & state, Env & env)
         Value nameValue;
         name.expr->eval(state, env, nameValue);
         state.forceStringNoCtx(nameValue, name.expr->getPos(), "while evaluating an attribute name");
-        return state.symbols.create(nameValue.string.s);
+        return state.symbols.create(nameValue.c_str());
     }
 }
 
@@ -1330,7 +1330,7 @@ void ExprAttrs::eval(EvalState & state, Env & env, Value & v)
         if (nameVal.type() == nNull)
             continue;
         state.forceStringNoCtx(nameVal, i.pos, "while evaluating the name of a dynamic attribute");
-        auto nameSym = state.symbols.create(nameVal.string.s);
+        auto nameSym = state.symbols.create(nameVal.c_str());
         Bindings::iterator j = v.attrs->find(nameSym);
         if (j != v.attrs->end())
             state.error<EvalError>("dynamic attribute '%1%' already defined at %2%", state.symbols[nameSym], state.positions[j->pos]).atPos(i.pos).withFrame(env, *this).debugThrow();
@@ -2256,7 +2256,7 @@ std::string_view EvalState::forceString(Value & v, const PosIdx pos, std::string
                 showType(v),
                 ValuePrinter(*this, v, errorPrintOptions)
             ).atPos(pos).debugThrow();
-        return v.string.s;
+        return v.str();
     } catch (Error & e) {
         e.addTrace(positions[pos], errorCtx);
         throw;
@@ -2266,8 +2266,8 @@ std::string_view EvalState::forceString(Value & v, const PosIdx pos, std::string
 
 void copyContext(const Value & v, NixStringContext & context)
 {
-    if (v.string.context)
-        for (const char * * p = v.string.context; *p; ++p)
+    if (v.stringContext())
+        for (const char * * p = v.stringContext(); *p; ++p)
             context.insert(NixStringContextElem::parse(*p));
 }
 
@@ -2283,8 +2283,8 @@ std::string_view EvalState::forceString(Value & v, NixStringContext & context, c
 std::string_view EvalState::forceStringNoCtx(Value & v, const PosIdx pos, std::string_view errorCtx)
 {
     auto s = forceString(v, pos, errorCtx);
-    if (v.string.context) {
-        error<EvalError>("the string '%1%' is not allowed to refer to a store path (such as '%2%')", v.string.s, v.string.context[0]).withTrace(pos, errorCtx).debugThrow();
+    if (v.stringContext()) {
+        error<EvalError>("the string '%1%' is not allowed to refer to a store path (such as '%2%')", v.c_str(), v.stringContext()[0]).withTrace(pos, errorCtx).debugThrow();
     }
     return s;
 }
@@ -2297,7 +2297,7 @@ bool EvalState::isDerivation(Value & v)
     if (i == v.attrs->end()) return false;
     forceValue(*i->value, i->pos);
     if (i->value->type() != nString) return false;
-    return strcmp(i->value->string.s, "derivation") == 0;
+    return strcmp(i->value->c_str(), "derivation") == 0;
 }
 
 
@@ -2329,7 +2329,7 @@ BackedStringView EvalState::coerceToString(
 
     if (v.type() == nString) {
         copyContext(v, context);
-        return std::string_view(v.string.s);
+        return v.str();
     }
 
     if (v.type() == nPath) {
@@ -2534,7 +2534,7 @@ bool EvalState::eqValues(Value & v1, Value & v2, const PosIdx pos, std::string_v
             return v1.boolean == v2.boolean;
 
         case nString:
-            return strcmp(v1.string.s, v2.string.s) == 0;
+            return strcmp(v1.c_str(), v2.c_str()) == 0;
 
         case nPath:
             return strcmp(v1._path, v2._path) == 0;
