@@ -3,6 +3,7 @@
 
 #include "eval.hh"
 
+#include <regex>
 #include <tuple>
 #include <vector>
 
@@ -64,5 +65,25 @@ typedef std::list<Value *> ValueList;
  */
 
 Bindings::iterator getAttr(EvalState & state, Symbol attrSym, Bindings * attrSet, std::string_view errorCtx);
+
+/**
+ * Struct definitions
+ */
+
+struct RegexCache
+{
+    // TODO use C++20 transparent comparison when available
+    std::unordered_map<std::string_view, std::regex> cache;
+    std::list<std::string> keys;
+
+    std::regex get(std::string_view re)
+    {
+        auto it = cache.find(re);
+        if (it != cache.end())
+            return it->second;
+        keys.emplace_back(re);
+        return cache.emplace(keys.back(), std::regex(keys.back(), std::regex::extended)).first->second;
+    }
+};
 
 }
