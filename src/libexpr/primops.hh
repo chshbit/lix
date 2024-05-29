@@ -44,13 +44,25 @@ struct RegisterPrimOp
 /**
  * Load a ValueInitializer from a DSO and return whatever it initializes
  */
-void prim_importNative(EvalState & state, const PosIdx pos, Value * * args, Value & v);
+void prim_importNative(EvalState & state, const PosIdx pos, Value ** args, Value & v);
 
 /**
  * Execute a program and parse its output
  */
-void prim_exec(EvalState & state, const PosIdx pos, Value * * args, Value & v);
+void prim_exec(EvalState & state, const PosIdx pos, Value ** args, Value & v);
 
 void makePositionThunks(EvalState & state, const PosIdx pos, Value & line, Value & column);
+
+#if HAVE_BOEHMGC
+typedef std::list<Value *, gc_allocator<Value *>> ValueList;
+#else
+typedef std::list<Value *> ValueList;
+#endif
+
+/**
+ * getAttr wrapper
+ */
+
+Bindings::iterator getAttr(EvalState & state, Symbol attrSym, Bindings * attrSet, std::string_view errorCtx);
 
 }

@@ -86,6 +86,7 @@ libexpr_sources = files(
   'flake/flake.cc',
   'flake/flakeref.cc',
   'flake/lockfile.cc',
+  'primops/attrset.cc',
   'primops/context.cc',
   'primops/fetchClosure.cc',
   'primops/fetchMercurial.cc',
