@@ -1,20 +1,10 @@
-#include "archive.hh"
 #include "derivations.hh"
-#include "downstream-placeholder.hh"
-#include "eval-inline.hh"
 #include "eval.hh"
 #include "eval-settings.hh"
 #include "gc-small-vector.hh"
-#include "globals.hh"
 #include "json-to-value.hh"
-#include "names.hh"
-#include "path-references.hh"
 #include "store-api.hh"
-#include "util.hh"
-#include "value-to-json.hh"
-#include "value-to-xml.hh"
 #include "primops.hh"
-#include "fetch-to-store.hh"
 
 #include <boost/container/small_vector.hpp>
 #include <nlohmann/json.hpp>
@@ -24,146 +14,19 @@
 #include <unistd.h>
 
 #include <algorithm>
-#include <cstring>
-#include <regex>
 #include <dlfcn.h>
-
-#include <cmath>
 
 namespace nix {
 
-
-/*************************************************************
- * Miscellaneous
- *************************************************************/
-
-
-/* Execute a program and parse its output */
-
-
-
-template<typename Callable>
- static inline void withExceptionContext(Trace trace, Callable&& func)
-{
-    try
-    {
-        func();
-    }
-    catch(Error & e)
-    {
-        e.pushTrace(trace);
-        throw;
-    }
-}
-
-
-
-/* Try evaluating the argument. Success => {success=true; value=something;},
- * else => {success=false; value=false;} */
-
-/* Return an environment variable.  Use with care. */
-/* Evaluate the first argument, then return the second argument. */
-
-
-
-/*************************************************************
- * Derivations
- *************************************************************/
-
-static void derivationStrictInternal(EvalState & state, const std::string & name, Bindings * attrs, Value & v);
-
-
-
-
-/*************************************************************
- * Paths
- *************************************************************/
-
-/*************************************************************
- * Creating files
- *************************************************************/
-
-
-/* Convert the argument (which can be any Nix expression) to an XML
-   representation returned in a string.  Not all Nix expressions can
-   be sensibly or completely represented (e.g., functions). */
-
-
-/* Store a string in the Nix store as a source file that can be used
-   as an input by derivations. */
-
-
-
-/*************************************************************
- * Sets
- *************************************************************/
-
-
-/* Determine whether the argument is a set. */
-
-
-/* Builds a set from a list specifying (name, value) pairs.  To be
-   precise, a list [{name = "name1"; value = value1;} ... {name =
-   "nameN"; value = valueN;}] is transformed to {name1 = value1;
-   ... nameN = valueN;}.  In case of duplicate occurrences of the same
-   name, the first takes precedence. */
-
-
-/*  */
-
-
-
-/*************************************************************
- * Lists
- *************************************************************/
-
-
-
-/* Return the first element of a list. */
-
-
-/* Apply a function to every element of a list. */
-
-/* Return the length of a list.  This is an O(1) time operation. */
-
-
-
-
-
-
-/*************************************************************
- * Integer arithmetic
- *************************************************************/
-
-
-
-
-
-/*************************************************************
- * String manipulation
- *************************************************************/
-
-
-/*************************************************************
- * Versions
- *************************************************************/
-
-
-
-/*************************************************************
- * Primop registration
- *************************************************************/
-
-
 RegisterPrimOp::PrimOps * RegisterPrimOp::primOps;
-
 
 RegisterPrimOp::RegisterPrimOp(PrimOp && primOp)
 {
-    if (!primOps) primOps = new PrimOps;
+    if (!primOps) {
+        primOps = new PrimOps;
+    }
     primOps->push_back(std::move(primOp));
 }
-
 
 void EvalState::createBaseEnv()
 {
@@ -174,9 +37,12 @@ void EvalState::createBaseEnv()
 
     /* `builtins' must be first! */
     v.mkAttrs(buildBindings(128).finish());
-    addConstant("builtins", v, {
-        .type = nAttrs,
-        .doc = R"(
+    addConstant(
+        "builtins",
+        v,
+        {
+            .type = nAttrs,
+            .doc = R"(
           Contains all the [built-in functions](@docroot@/language/builtins.md) and values.
 
           Since built-in functions were added over time, [testing for attributes](./operators.md#has-attribute) in `builtins` can be used for graceful fallback on older Nix installations:
@@ -186,12 +52,16 @@ void EvalState::createBaseEnv()
           if builtins ? hasContext then builtins.hasContext s else true
           ```
         )",
-    });
+        }
+    );
 
     v.mkBool(true);
-    addConstant("true", v, {
-        .type = nBool,
-        .doc = R"(
+    addConstant(
+        "true",
+        v,
+        {
+            .type = nBool,
+            .doc = R"(
           Primitive value.
 
           It can be returned by
@@ -206,12 +76,16 @@ void EvalState::createBaseEnv()
           1
           ```
         )",
-    });
+        }
+    );
 
     v.mkBool(false);
-    addConstant("false", v, {
-        .type = nBool,
-        .doc = R"(
+    addConstant(
+        "false",
+        v,
+        {
+            .type = nBool,
+            .doc = R"(
           Primitive value.
 
           It can be returned by
@@ -226,12 +100,16 @@ void EvalState::createBaseEnv()
           1
           ```
         )",
-    });
+        }
+    );
 
     v.mkNull();
-    addConstant("null", v, {
-        .type = nNull,
-        .doc = R"(
+    addConstant(
+        "null",
+        v,
+        {
+            .type = nNull,
+            .doc = R"(
           Primitive value.
 
           The name `null` is not special, and can be shadowed:
@@ -241,14 +119,18 @@ void EvalState::createBaseEnv()
           1
           ```
         )",
-    });
+        }
+    );
 
     if (!evalSettings.pureEval) {
         v.mkInt(time(0));
     }
-    addConstant("__currentTime", v, {
-        .type = nInt,
-        .doc = R"(
+    addConstant(
+        "__currentTime",
+        v,
+        {
+            .type = nInt,
+            .doc = R"(
           Return the [Unix time](https://en.wikipedia.org/wiki/Unix_time) at first evaluation.
           Repeated references to that name will re-use the initially obtained value.
 
@@ -267,14 +149,19 @@ void EvalState::createBaseEnv()
 
           The [store path](@docroot@/glossary.md#gloss-store-path) of a derivation depending on `currentTime` will differ for each evaluation, unless both evaluate `builtins.currentTime` in the same second.
         )",
-        .impureOnly = true,
-    });
+            .impureOnly = true,
+        }
+    );
 
-    if (!evalSettings.pureEval)
+    if (!evalSettings.pureEval) {
         v.mkString(evalSettings.getCurrentSystem());
-    addConstant("__currentSystem", v, {
-        .type = nString,
-        .doc = R"(
+    }
+    addConstant(
+        "__currentSystem",
+        v,
+        {
+            .type = nString,
+            .doc = R"(
           The value of the
           [`eval-system`](@docroot@/command-ref/conf-file.md#conf-eval-system)
           or else
@@ -297,13 +184,17 @@ void EvalState::createBaseEnv()
           "mips64-linux"
           ```
         )",
-        .impureOnly = true,
-    });
+            .impureOnly = true,
+        }
+    );
 
     v.mkString("2.18.3-lix");
-    addConstant("__nixVersion", v, {
-        .type = nString,
-        .doc = R"(
+    addConstant(
+        "__nixVersion",
+        v,
+        {
+            .type = nString,
+            .doc = R"(
           Legacy version of Nix. Always returns "2.18.3-lix" on Lix.
 
           Code in the Nix language should use other means of feature detection
@@ -314,12 +205,16 @@ void EvalState::createBaseEnv()
           If the feature you want to write compatibility code for cannot be
           detected by any means, please file a Lix bug.
         )",
-    });
+        }
+    );
 
     v.mkString(store->storeDir);
-    addConstant("__storeDir", v, {
-        .type = nString,
-        .doc = R"(
+    addConstant(
+        "__storeDir",
+        v,
+        {
+            .type = nString,
+            .doc = R"(
           Logical file system location of the [Nix store](@docroot@/glossary.md#gloss-store) currently in use.
 
           This value is determined by the `store` parameter in [Store URLs](@docroot@/command-ref/new-cli/nix3-help-stores.md):
@@ -329,15 +224,19 @@ void EvalState::createBaseEnv()
           "/blah"
           ```
         )",
-    });
+        }
+    );
 
     /* Legacy language version.
      * This is fixed at 6, and will never change in the future on Lix.
      * A better language versioning construct needs to be built instead. */
     v.mkInt(6);
-    addConstant("__langVersion", v, {
-        .type = nInt,
-        .doc = R"(
+    addConstant(
+        "__langVersion",
+        v,
+        {
+            .type = nInt,
+            .doc = R"(
           The legacy version of the Nix language. Always is `6` on Lix,
           matching Nix 2.18.
 
@@ -349,7 +248,8 @@ void EvalState::createBaseEnv()
           If the feature you want to write compatibility code for cannot be
           detected by any means, please file a Lix bug.
         )",
-    });
+        }
+    );
 
     // Miscellaneous
     if (evalSettings.enableNativeCode) {
@@ -367,7 +267,7 @@ void EvalState::createBaseEnv()
 
     addPrimOp({
         .name = "__traceVerbose",
-        .args = { "e1", "e2" },
+        .args = {"e1", "e2"},
         .arity = 2,
         .doc = R"(
           Evaluate *e1* and print its abstract syntax representation on standard
@@ -386,9 +286,12 @@ void EvalState::createBaseEnv()
         attrs.alloc("prefix").mkString(i.prefix.s);
         (v.listElems()[n++] = allocValue())->mkAttrs(attrs);
     }
-    addConstant("__nixPath", v, {
-        .type = nList,
-        .doc = R"(
+    addConstant(
+        "__nixPath",
+        v,
+        {
+            .type = nList,
+            .doc = R"(
           The search path used to resolve angle bracket path lookups.
 
           Angle bracket expressions can be
@@ -406,16 +309,18 @@ void EvalState::createBaseEnv()
           builtins.findFile builtins.nixPath "nixpkgs"
           ```
         )",
-    });
+        }
+    );
 
-    if (RegisterPrimOp::primOps)
-        for (auto & primOp : *RegisterPrimOp::primOps)
-            if (experimentalFeatureSettings.isEnabled(primOp.experimentalFeature))
-            {
+    if (RegisterPrimOp::primOps) {
+        for (auto & primOp : *RegisterPrimOp::primOps) {
+            if (experimentalFeatureSettings.isEnabled(primOp.experimentalFeature)) {
                 auto primOpAdjusted = primOp;
                 primOpAdjusted.arity = std::max(primOp.args.size(), primOp.arity);
                 addPrimOp(std::move(primOpAdjusted));
             }
+        }
+    }
 
     /* Add a wrapper around the derivation primop that computes the
        `drvPath' and `outPath' attributes lazily.
@@ -423,9 +328,13 @@ void EvalState::createBaseEnv()
        Null docs because it is documented separately.
        */
     auto vDerivation = allocValue();
-    addConstant("derivation", vDerivation, {
-        .type = nFunction,
-    });
+    addConstant(
+        "derivation",
+        vDerivation,
+        {
+            .type = nFunction,
+        }
+    );
 
     /* Now that we've added all primops, sort the `builtins' set,
        because attribute lookups expect it to be sorted. */
@@ -436,12 +345,14 @@ void EvalState::createBaseEnv()
     /* Note: we have to initialize the 'derivation' constant *after*
        building baseEnv/staticBaseEnv because it uses 'builtins'. */
     char code[] =
-        #include "primops/derivation.nix.gen.hh"
+#include "primops/derivation.nix.gen.hh"
         // the parser needs two NUL bytes as terminators; one of them
         // is implied by being a C string.
         "\0";
-    eval(parse(code, sizeof(code), derivationInternal, {CanonPath::root}, staticBaseEnv), *vDerivation);
+    eval(
+        parse(code, sizeof(code), derivationInternal, {CanonPath::root}, staticBaseEnv),
+        *vDerivation
+    );
 }
-
 
 }
