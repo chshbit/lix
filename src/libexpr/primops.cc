@@ -396,153 +396,7 @@ void prim_exec(EvalState & state, const PosIdx pos, Value * * args, Value & v)
     }
 }
 
-/* Return a string representing the type of the expression. */
-static void prim_typeOf(EvalState & state, const PosIdx pos, Value * * args, Value & v)
-{
-    state.forceValue(*args[0], pos);
-    std::string t;
-    switch (args[0]->type()) {
-        case nInt: t = "int"; break;
-        case nBool: t = "bool"; break;
-        case nString: t = "string"; break;
-        case nPath: t = "path"; break;
-        case nNull: t = "null"; break;
-        case nAttrs: t = "set"; break;
-        case nList: t = "list"; break;
-        case nFunction: t = "lambda"; break;
-        case nExternal:
-            t = args[0]->external->typeOf();
-            break;
-        case nFloat: t = "float"; break;
-        case nThunk: abort();
-    }
-    v.mkString(t);
-}
 
-static RegisterPrimOp primop_typeOf({
-    .name = "__typeOf",
-    .args = {"e"},
-    .doc = R"(
-      Return a string representing the type of the value *e*, namely
-      `"int"`, `"bool"`, `"string"`, `"path"`, `"null"`, `"set"`,
-      `"list"`, `"lambda"` or `"float"`.
-    )",
-    .fun = prim_typeOf,
-});
-
-/* Determine whether the argument is the null value. */
-static void prim_isNull(EvalState & state, const PosIdx pos, Value * * args, Value & v)
-{
-    state.forceValue(*args[0], pos);
-    v.mkBool(args[0]->type() == nNull);
-}
-
-static RegisterPrimOp primop_isNull({
-    .name = "isNull",
-    .args = {"e"},
-    .doc = R"(
-      Return `true` if *e* evaluates to `null`, and `false` otherwise.
-
-      This is equivalent to `e == null`.
-    )",
-    .fun = prim_isNull,
-});
-
-/* Determine whether the argument is a function. */
-static void prim_isFunction(EvalState & state, const PosIdx pos, Value * * args, Value & v)
-{
-    state.forceValue(*args[0], pos);
-    v.mkBool(args[0]->type() == nFunction);
-}
-
-static RegisterPrimOp primop_isFunction({
-    .name = "__isFunction",
-    .args = {"e"},
-    .doc = R"(
-      Return `true` if *e* evaluates to a function, and `false` otherwise.
-    )",
-    .fun = prim_isFunction,
-});
-
-/* Determine whether the argument is an integer. */
-static void prim_isInt(EvalState & state, const PosIdx pos, Value * * args, Value & v)
-{
-    state.forceValue(*args[0], pos);
-    v.mkBool(args[0]->type() == nInt);
-}
-
-static RegisterPrimOp primop_isInt({
-    .name = "__isInt",
-    .args = {"e"},
-    .doc = R"(
-      Return `true` if *e* evaluates to an integer, and `false` otherwise.
-    )",
-    .fun = prim_isInt,
-});
-
-/* Determine whether the argument is a float. */
-static void prim_isFloat(EvalState & state, const PosIdx pos, Value * * args, Value & v)
-{
-    state.forceValue(*args[0], pos);
-    v.mkBool(args[0]->type() == nFloat);
-}
-
-static RegisterPrimOp primop_isFloat({
-    .name = "__isFloat",
-    .args = {"e"},
-    .doc = R"(
-      Return `true` if *e* evaluates to a float, and `false` otherwise.
-    )",
-    .fun = prim_isFloat,
-});
-
-/* Determine whether the argument is a string. */
-static void prim_isString(EvalState & state, const PosIdx pos, Value * * args, Value & v)
-{
-    state.forceValue(*args[0], pos);
-    v.mkBool(args[0]->type() == nString);
-}
-
-static RegisterPrimOp primop_isString({
-    .name = "__isString",
-    .args = {"e"},
-    .doc = R"(
-      Return `true` if *e* evaluates to a string, and `false` otherwise.
-    )",
-    .fun = prim_isString,
-});
-
-/* Determine whether the argument is a Boolean. */
-static void prim_isBool(EvalState & state, const PosIdx pos, Value * * args, Value & v)
-{
-    state.forceValue(*args[0], pos);
-    v.mkBool(args[0]->type() == nBool);
-}
-
-static RegisterPrimOp primop_isBool({
-    .name = "__isBool",
-    .args = {"e"},
-    .doc = R"(
-      Return `true` if *e* evaluates to a bool, and `false` otherwise.
-    )",
-    .fun = prim_isBool,
-});
-
-/* Determine whether the argument is a path. */
-static void prim_isPath(EvalState & state, const PosIdx pos, Value * * args, Value & v)
-{
-    state.forceValue(*args[0], pos);
-    v.mkBool(args[0]->type() == nPath);
-}
-
-static RegisterPrimOp primop_isPath({
-    .name = "__isPath",
-    .args = {"e"},
-    .doc = R"(
-      Return `true` if *e* evaluates to a path, and `false` otherwise.
-    )",
-    .fun = prim_isPath,
-});
 
 template<typename Callable>
  static inline void withExceptionContext(Trace trace, Callable&& func)
@@ -2175,20 +2029,6 @@ void makePositionThunks(EvalState & state, const PosIdx pos, Value & line, Value
 }
 
 /* Determine whether the argument is a set. */
-static void prim_isAttrs(EvalState & state, const PosIdx pos, Value * * args, Value & v)
-{
-    state.forceValue(*args[0], pos);
-    v.mkBool(args[0]->type() == nAttrs);
-}
-
-static RegisterPrimOp primop_isAttrs({
-    .name = "__isAttrs",
-    .args = {"e"},
-    .doc = R"(
-      Return `true` if *e* evaluates to a set, and `false` otherwise.
-    )",
-    .fun = prim_isAttrs,
-});
 
 
 /* Builds a set from a list specifying (name, value) pairs.  To be
@@ -2197,40 +2037,6 @@ static RegisterPrimOp primop_isAttrs({
    ... nameN = valueN;}.  In case of duplicate occurrences of the same
    name, the first takes precedence. */
 
-static void prim_functionArgs(EvalState & state, const PosIdx pos, Value * * args, Value & v)
-{
-    state.forceValue(*args[0], pos);
-    if (args[0]->isPrimOpApp() || args[0]->isPrimOp()) {
-        v.mkAttrs(&state.emptyBindings);
-        return;
-    }
-    if (!args[0]->isLambda())
-        state.error<TypeError>("'functionArgs' requires a function").atPos(pos).debugThrow();
-    if (!args[0]->lambda.fun->hasFormals()) {
-        v.mkAttrs(&state.emptyBindings);
-        return;
-    }
-    auto attrs = state.buildBindings(args[0]->lambda.fun->formals->formals.size());
-    for (auto & i : args[0]->lambda.fun->formals->formals)
-        // !!! should optimise booleans (allocate only once)
-        attrs.alloc(i.name, i.pos).mkBool(i.def);
-    v.mkAttrs(attrs);
-}
-static RegisterPrimOp primop_functionArgs({
-    .name = "__functionArgs",
-    .args = {"f"},
-    .doc = R"(
-      Return a set containing the names of the formal arguments expected
-      by the function *f*. The value of each attribute is a Boolean
-      denoting whether the corresponding argument has a default value. For
-      instance, `functionArgs ({ x, y ? 123}: ...) = { x = false; y =
-      true; }`.
-      "Formal argument" here refers to the attributes pattern-matched by
-      the function. Plain lambdas are not included, e.g. `functionArgs (x:
-      ...) = { }`.
-    )",
-    .fun = prim_functionArgs,
-});
 
 /*  */
 
@@ -2241,21 +2047,6 @@ static RegisterPrimOp primop_functionArgs({
  *************************************************************/
 
 
-/* Determine whether the argument is a list. */
-static void prim_isList(EvalState & state, const PosIdx pos, Value * * args, Value & v)
-{
-    state.forceValue(*args[0], pos);
-    v.mkBool(args[0]->type() == nList);
-}
-
-static RegisterPrimOp primop_isList({
-    .name = "__isList",
-    .args = {"e"},
-    .doc = R"(
-      Return `true` if *e* evaluates to a list, and `false` otherwise.
-    )",
-    .fun = prim_isList,
-});
 
 /* Return the first element of a list. */
 

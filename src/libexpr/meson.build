@@ -97,6 +97,7 @@ libexpr_sources = files(
   'primops/fromTOML.cc',
   'primops/list.cc',
   'primops/string.cc',
+  'primops/types.cc',
   'value/context.cc',
 )
 
