@@ -103,6 +103,7 @@ libexpr_sources = files(
   'primops/path.cc',
   'primops/string.cc',
   'primops/system.cc',
+  'primops/toXML.cc',
   'primops/types.cc',
   'value/context.cc',
 )
