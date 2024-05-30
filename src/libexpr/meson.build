@@ -89,6 +89,7 @@ libexpr_sources = files(
   'primops/attrset.cc',
   'primops/context.cc',
   'primops/control.cc',
+  'primops/hash.cc',
   'primops/fetchClosure.cc',
   'primops/fetchMercurial.cc',
   'primops/fetchTree.cc',

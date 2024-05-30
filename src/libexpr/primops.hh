@@ -86,4 +86,11 @@ struct RegexCache
     }
 };
 
+struct RealisePathFlags {
+    // Whether to check that the path is allowed in pure eval mode
+    bool checkForPureEval = true;
+};
+
+SourcePath realisePath(EvalState & state, const PosIdx pos, Value & v, const RealisePathFlags flags = {});
+
 }
