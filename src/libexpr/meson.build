@@ -98,6 +98,7 @@ libexpr_sources = files(
   'primops/fetchTree.cc',
   'primops/fromTOML.cc',
   'primops/import.cc',
+  'primops/json.cc',
   'primops/list.cc',
   'primops/path.cc',
   'primops/string.cc',
