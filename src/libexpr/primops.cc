@@ -37,85 +37,6 @@ namespace nix {
  * Miscellaneous
  *************************************************************/
 
-StringMap EvalState::realiseContext(const NixStringContext & context)
-{
-    std::vector<DerivedPath::Built> drvs;
-    StringMap res;
-
-    for (auto & c : context) {
-        auto ensureValid = [&](const StorePath & p) {
-            if (!store->isValidPath(p))
-                error<InvalidPathError>(store->printStorePath(p)).debugThrow();
-        };
-        std::visit(overloaded {
-            [&](const NixStringContextElem::Built & b) {
-                drvs.push_back(DerivedPath::Built {
-                    .drvPath = b.drvPath,
-                    .outputs = OutputsSpec::Names { b.output },
-                });
-                ensureValid(b.drvPath->getBaseStorePath());
-            },
-            [&](const NixStringContextElem::Opaque & o) {
-                auto ctxS = store->printStorePath(o.path);
-                res.insert_or_assign(ctxS, ctxS);
-                ensureValid(o.path);
-            },
-            [&](const NixStringContextElem::DrvDeep & d) {
-                /* Treat same as Opaque */
-                auto ctxS = store->printStorePath(d.drvPath);
-                res.insert_or_assign(ctxS, ctxS);
-                ensureValid(d.drvPath);
-            },
-        }, c.raw);
-    }
-
-    if (drvs.empty()) return {};
-
-    if (!evalSettings.enableImportFromDerivation)
-        error<EvalError>(
-            "cannot build '%1%' during evaluation because the option 'allow-import-from-derivation' is disabled",
-            drvs.begin()->to_string(*store)
-        ).debugThrow();
-
-    /* Build/substitute the context. */
-    std::vector<DerivedPath> buildReqs;
-    for (auto & d : drvs) buildReqs.emplace_back(DerivedPath { d });
-    buildStore->buildPaths(buildReqs, bmNormal, store);
-
-    StorePathSet outputsToCopyAndAllow;
-
-    for (auto & drv : drvs) {
-        auto outputs = resolveDerivedPath(*buildStore, drv, &*store);
-        for (auto & [outputName, outputPath] : outputs) {
-            outputsToCopyAndAllow.insert(outputPath);
-
-            /* Get all the output paths corresponding to the placeholders we had */
-            if (experimentalFeatureSettings.isEnabled(Xp::CaDerivations)) {
-                res.insert_or_assign(
-                    DownstreamPlaceholder::fromSingleDerivedPathBuilt(
-                        SingleDerivedPath::Built {
-                            .drvPath = drv.drvPath,
-                            .output = outputName,
-                        }).render(),
-                    buildStore->printStorePath(outputPath)
-                );
-            }
-        }
-    }
-
-    if (store != buildStore) copyClosure(*buildStore, *store, outputsToCopyAndAllow);
-    if (allowedPaths) {
-        for (auto & outputPath : outputsToCopyAndAllow) {
-            /* Add the output of this derivations to the allowed
-               paths. */
-            allowPath(outputPath);
-        }
-    }
-
-    return res;
-}
-
-
 
 /* Execute a program and parse its output */
 
@@ -136,26 +57,6 @@ template<typename Callable>
 }
 
 
-static void prim_addErrorContext(EvalState & state, const PosIdx pos, Value * * args, Value & v)
-{
-    try {
-        state.forceValue(*args[1], pos);
-        v = *args[1];
-    } catch (Error & e) {
-        NixStringContext context;
-        auto message = state.coerceToString(pos, *args[0], context,
-                "while evaluating the error message passed to builtins.addErrorContext",
-                false, false).toOwned();
-        e.addTrace(nullptr, HintFmt(message));
-        throw;
-    }
-}
-
-static RegisterPrimOp primop_addErrorContext(PrimOp {
-    .name = "__addErrorContext",
-    .arity = 2,
-    .fun = prim_addErrorContext,
-});
 
 /* Try evaluating the argument. Success => {success=true; value=something;},
  * else => {success=false; value=false;} */
