@@ -35,7 +35,7 @@ static void prim_attrNames(EvalState & state, const PosIdx pos, Value ** args, V
     });
 }
 
-static RegisterPrimOp primop_attrNames({
+PrimOp primop_attrNames({
     .name = "__attrNames",
     .args = {"set"},
     .doc = R"(
@@ -72,7 +72,7 @@ static void prim_attrValues(EvalState & state, const PosIdx pos, Value ** args, 
     }
 }
 
-static RegisterPrimOp primop_attrValues({
+PrimOp primop_attrValues({
     .name = "__attrValues",
     .args = {"set"},
     .doc = R"(
@@ -116,7 +116,7 @@ static void prim_catAttrs(EvalState & state, const PosIdx pos, Value ** args, Va
     }
 }
 
-static RegisterPrimOp primop_catAttrs({
+PrimOp primop_catAttrs({
     .name = "__catAttrs",
     .args = {"attr", "list"},
     .doc = R"(
@@ -239,7 +239,7 @@ static void prim_genericClosure(EvalState & state, const PosIdx pos, Value ** ar
     }
 }
 
-static RegisterPrimOp primop_genericClosure(PrimOp{
+PrimOp primop_genericClosure(PrimOp{
     .name = "__genericClosure",
     .args = {"attrset"},
     .arity = 1,
@@ -298,7 +298,7 @@ void prim_getAttr(EvalState & state, const PosIdx pos, Value ** args, Value & v)
     v = *i->value;
 }
 
-static RegisterPrimOp primop_getAttr({
+PrimOp primop_getAttr({
     .name = "__getAttr",
     .args = {"s", "set"},
     .doc = R"(
@@ -350,7 +350,7 @@ static void prim_groupBy(EvalState & state, const PosIdx pos, Value ** args, Val
     v.mkAttrs(attrs2.alreadySorted());
 }
 
-static RegisterPrimOp primop_groupBy({
+PrimOp primop_groupBy({
     .name = "__groupBy",
     .args = {"f", "list"},
     .doc = R"(
@@ -389,7 +389,7 @@ static void prim_hasAttr(EvalState & state, const PosIdx pos, Value ** args, Val
     v.mkBool(args[1]->attrs->find(state.symbols.create(attr)) != args[1]->attrs->end());
 }
 
-static RegisterPrimOp primop_hasAttr({
+PrimOp primop_hasAttr({
     .name = "__hasAttr",
     .args = {"s", "set"},
     .doc = R"(
@@ -475,7 +475,7 @@ static void prim_intersectAttrs(EvalState & state, const PosIdx pos, Value ** ar
     v.mkAttrs(attrs.alreadySorted());
 }
 
-static RegisterPrimOp primop_intersectAttrs({
+PrimOp primop_intersectAttrs({
     .name = "__intersectAttrs",
     .args = {"e1", "e2"},
     .doc = R"(
@@ -510,7 +510,7 @@ static void prim_mapAttrs(EvalState & state, const PosIdx pos, Value ** args, Va
     v.mkAttrs(attrs.alreadySorted());
 }
 
-static RegisterPrimOp primop_mapAttrs({
+PrimOp primop_mapAttrs({
     .name = "__mapAttrs",
     .args = {"f", "attrset"},
     .doc = R"(
@@ -568,7 +568,7 @@ static void prim_removeAttrs(EvalState & state, const PosIdx pos, Value ** args,
     v.mkAttrs(attrs.alreadySorted());
 }
 
-static RegisterPrimOp primop_removeAttrs({
+PrimOp primop_removeAttrs({
     .name = "removeAttrs",
     .args = {"set", "list"},
     .doc = R"(
@@ -647,7 +647,7 @@ static void prim_zipAttrsWith(EvalState & state, const PosIdx pos, Value ** args
     }
 }
 
-static RegisterPrimOp primop_zipAttrsWith({
+PrimOp primop_zipAttrsWith({
     .name = "__zipAttrsWith",
     .args = {"f", "list"},
     .doc = R"(

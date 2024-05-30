@@ -28,7 +28,7 @@ static void prim_baseNameOf(EvalState & state, const PosIdx pos, Value ** args, 
     );
 }
 
-static RegisterPrimOp primop_baseNameOf({
+PrimOp primop_baseNameOf({
     .name = "baseNameOf",
     .args = {"s"},
     .doc = R"(
@@ -54,7 +54,7 @@ static void prim_compareVersions(EvalState & state, const PosIdx pos, Value ** a
     v.mkInt(compareVersions(version1, version2));
 }
 
-static RegisterPrimOp primop_compareVersions({
+PrimOp primop_compareVersions({
     .name = "__compareVersions",
     .args = {"s1", "s2"},
     .doc = R"(
@@ -111,7 +111,7 @@ static void prim_concatStringsSep(EvalState & state, const PosIdx pos, Value ** 
     v.mkString(res, context);
 }
 
-static RegisterPrimOp primop_concatStringsSep(
+PrimOp primop_concatStringsSep(
     {.name = "__concatStringsSep",
      .args = {"separator", "list"},
      .doc = R"(
@@ -170,7 +170,7 @@ void prim_match(EvalState & state, const PosIdx pos, Value ** args, Value & v)
     }
 }
 
-static RegisterPrimOp primop_match({
+PrimOp primop_match({
     .name = "__match",
     .args = {"regex", "str"},
     .doc = R"s(
@@ -222,7 +222,7 @@ static void prim_parseDrvName(EvalState & state, const PosIdx pos, Value ** args
     v.mkAttrs(attrs);
 }
 
-static RegisterPrimOp primop_parseDrvName({
+PrimOp primop_parseDrvName({
     .name = "__parseDrvName",
     .args = {"s"},
     .doc = R"(
@@ -326,7 +326,7 @@ static void prim_replaceStrings(EvalState & state, const PosIdx pos, Value ** ar
     v.mkString(res, context);
 }
 
-static RegisterPrimOp primop_replaceStrings({
+PrimOp primop_replaceStrings({
     .name = "__replaceStrings",
     .args = {"from", "to", "s"},
     .doc = R"(
@@ -419,7 +419,7 @@ void prim_split(EvalState & state, const PosIdx pos, Value ** args, Value & v)
     }
 }
 
-static RegisterPrimOp primop_split({
+PrimOp primop_split({
     .name = "__split",
     .args = {"regex", "str"},
     .doc = R"s(
@@ -480,7 +480,7 @@ static void prim_splitVersion(EvalState & state, const PosIdx pos, Value ** args
     }
 }
 
-static RegisterPrimOp primop_splitVersion({
+PrimOp primop_splitVersion({
     .name = "__splitVersion",
     .args = {"s"},
     .doc = R"(
@@ -504,7 +504,7 @@ static void prim_stringLength(EvalState & state, const PosIdx pos, Value ** args
     v.mkInt(s->size());
 }
 
-static RegisterPrimOp primop_stringLength({
+PrimOp primop_stringLength({
     .name = "__stringLength",
     .args = {"e"},
     .doc = R"(
@@ -557,7 +557,7 @@ static void prim_substring(EvalState & state, const PosIdx pos, Value ** args, V
     v.mkString((unsigned int) start >= s->size() ? "" : s->substr(start, len), context);
 }
 
-static RegisterPrimOp primop_substring({
+PrimOp primop_substring({
     .name = "__substring",
     .args = {"start", "len", "s"},
     .doc = R"(
@@ -595,7 +595,7 @@ static void prim_toString(EvalState & state, const PosIdx pos, Value ** args, Va
     v.mkString(*s, context);
 }
 
-static RegisterPrimOp primop_toString({
+PrimOp primop_toString({
     .name = "toString",
     .args = {"e"},
     .doc = R"(

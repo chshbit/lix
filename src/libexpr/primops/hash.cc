@@ -22,7 +22,7 @@ static void prim_hashFile(EvalState & state, const PosIdx pos, Value ** args, Va
     v.mkString(hashString(*ht, path.readFile()).to_string(Base16, false));
 }
 
-static RegisterPrimOp primop_hashFile({
+PrimOp primop_hashFile({
     .name = "__hashFile",
     .args = {"type", "p"},
     .doc = R"(
@@ -55,7 +55,7 @@ static void prim_hashString(EvalState & state, const PosIdx pos, Value ** args, 
     v.mkString(hashString(*ht, s).to_string(Base16, false));
 }
 
-static RegisterPrimOp primop_hashString({
+PrimOp primop_hashString({
     .name = "__hashString",
     .args = {"type", "s"},
     .doc = R"(

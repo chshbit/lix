@@ -81,7 +81,7 @@ static void prim_getEnv(EvalState & state, const PosIdx pos, Value ** args, Valu
     v.mkString(evalSettings.restrictEval || evalSettings.pureEval ? "" : getEnv(name).value_or(""));
 }
 
-static RegisterPrimOp primop_getEnv({
+PrimOp primop_getEnv({
     .name = "__getEnv",
     .args = {"s"},
     .doc = R"(

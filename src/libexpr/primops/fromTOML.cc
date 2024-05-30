@@ -86,7 +86,7 @@ static void prim_fromTOML(EvalState & state, const PosIdx pos, Value * * args, V
     }
 }
 
-static RegisterPrimOp primop_fromTOML({
+PrimOp primop_fromTOML({
     .name = "fromTOML",
     .args = {"e"},
     .doc = R"(

@@ -150,7 +150,7 @@ static void prim_import(EvalState & state, const PosIdx pos, Value ** args, Valu
     import(state, pos, *args[0], nullptr, v);
 }
 
-static RegisterPrimOp primop_import({
+PrimOp primop_import({
     .name = "import",
     .args = {"path"},
     // TODO turn "normal path values" into link below
@@ -261,7 +261,7 @@ static void prim_scopedImport(EvalState & state, const PosIdx pos, Value ** args
     import(state, pos, *args[1], args[0], v);
 }
 
-static RegisterPrimOp primop_scopedImport(PrimOp{
+PrimOp primop_scopedImport(PrimOp{
     .name = "scopedImport",
     .arity = 2,
     .fun = prim_scopedImport,

@@ -21,7 +21,7 @@ static void prim_fromJSON(EvalState & state, const PosIdx pos, Value ** args, Va
     }
 }
 
-static RegisterPrimOp primop_fromJSON({
+PrimOp primop_fromJSON({
     .name = "__fromJSON",
     .args = {"e"},
     .doc = R"(
@@ -48,7 +48,7 @@ static void prim_toJSON(EvalState & state, const PosIdx pos, Value ** args, Valu
     v.mkString(out.str(), context);
 }
 
-static RegisterPrimOp primop_toJSON({
+PrimOp primop_toJSON({
     .name = "__toJSON",
     .args = {"e"},
     .doc = R"(

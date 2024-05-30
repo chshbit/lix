@@ -42,7 +42,7 @@ static void prim_functionArgs(EvalState & state, const PosIdx pos, Value ** args
     v.mkAttrs(attrs);
 }
 
-static RegisterPrimOp primop_functionArgs({
+PrimOp primop_functionArgs({
     .name = "__functionArgs",
     .args = {"f"},
     .doc = R"(
@@ -63,7 +63,7 @@ static RegisterPrimOp primop_functionArgs({
  * builtins.isAttrs
  */
 
-static RegisterPrimOp primop_isAttrs({
+PrimOp primop_isAttrs({
     .name = "__isAttrs",
     .args = {"e"},
     .doc = R"(
@@ -76,7 +76,7 @@ static RegisterPrimOp primop_isAttrs({
  * builtins.isBool
  */
 
-static RegisterPrimOp primop_isBool({
+PrimOp primop_isBool({
     .name = "__isBool",
     .args = {"e"},
     .doc = R"(
@@ -89,7 +89,7 @@ static RegisterPrimOp primop_isBool({
  * builtins.Float
  */
 
-static RegisterPrimOp primop_isFloat({
+PrimOp primop_isFloat({
     .name = "__isFloat",
     .args = {"e"},
     .doc = R"(
@@ -102,7 +102,7 @@ static RegisterPrimOp primop_isFloat({
  * builtins.isFunction
  */
 
-static RegisterPrimOp primop_isFunction({
+PrimOp primop_isFunction({
     .name = "__isFunction",
     .args = {"e"},
     .doc = R"(
@@ -115,7 +115,7 @@ static RegisterPrimOp primop_isFunction({
  * builtins.isInt
  */
 
-static RegisterPrimOp primop_isInt({
+PrimOp primop_isInt({
     .name = "__isInt",
     .args = {"e"},
     .doc = R"(
@@ -128,7 +128,7 @@ static RegisterPrimOp primop_isInt({
  * builtins.isList
  */
 
-static RegisterPrimOp primop_isList({
+PrimOp primop_isList({
     .name = "__isList",
     .args = {"e"},
     .doc = R"(
@@ -141,7 +141,7 @@ static RegisterPrimOp primop_isList({
  * builtins.isNull
  */
 
-static RegisterPrimOp primop_isNull({
+PrimOp primop_isNull({
     .name = "isNull",
     .args = {"e"},
     .doc = R"(
@@ -156,7 +156,7 @@ static RegisterPrimOp primop_isNull({
  * builtins.isPath
  */
 
-static RegisterPrimOp primop_isPath({
+PrimOp primop_isPath({
     .name = "__isPath",
     .args = {"e"},
     .doc = R"(
@@ -169,7 +169,7 @@ static RegisterPrimOp primop_isPath({
  * builtins.isString
  */
 
-static RegisterPrimOp primop_isString({
+PrimOp primop_isString({
     .name = "__isString",
     .args = {"e"},
     .doc = R"(
@@ -223,7 +223,7 @@ static void prim_typeOf(EvalState & state, const PosIdx pos, Value ** args, Valu
     v.mkString(t);
 }
 
-static RegisterPrimOp primop_typeOf({
+PrimOp primop_typeOf({
     .name = "__typeOf",
     .args = {"e"},
     .doc = R"(

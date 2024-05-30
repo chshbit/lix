@@ -389,7 +389,7 @@ static void prim_derivationStrict(EvalState & state, const PosIdx pos, Value * *
     }
 }
 
-static RegisterPrimOp primop_derivationStrict(PrimOp {
+PrimOp primop_derivationStrict(PrimOp {
     .name = "derivationStrict",
     .arity = 1,
     .fun = prim_derivationStrict,

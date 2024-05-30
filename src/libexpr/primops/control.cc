@@ -22,7 +22,7 @@ static void prim_abort(EvalState & state, const PosIdx pos, Value ** args, Value
         .debugThrow();
 }
 
-static RegisterPrimOp primop_abort({
+PrimOp primop_abort({
     .name = "abort",
     .args = {"s"},
     .doc = R"(
@@ -52,7 +52,7 @@ static void prim_break(EvalState & state, const PosIdx pos, Value ** args, Value
     v = *args[0];
 }
 
-static RegisterPrimOp primop_break({
+PrimOp primop_break({
     .name = "break",
     .args = {"v"},
     .doc = R"(
@@ -78,7 +78,7 @@ static void prim_throw(EvalState & state, const PosIdx pos, Value ** args, Value
     state.error<ThrownError>(s).debugThrow();
 }
 
-static RegisterPrimOp primop_throw({
+PrimOp primop_throw({
     .name = "throw",
     .args = {"s"},
     .doc = R"(
@@ -126,7 +126,7 @@ static void prim_tryEval(EvalState & state, const PosIdx pos, Value ** args, Val
     v.mkAttrs(attrs);
 }
 
-static RegisterPrimOp primop_tryEval({
+PrimOp primop_tryEval({
     .name = "__tryEval",
     .args = {"e"},
     .doc = R"(

@@ -198,7 +198,7 @@ static void prim_fetchTree(EvalState & state, const PosIdx pos, Value * * args, 
 }
 
 // FIXME: document
-static RegisterPrimOp primop_fetchTree({
+PrimOp primop_fetchTree({
     .name = "fetchTree",
     .arity = 1,
     .fun = prim_fetchTree
@@ -290,7 +290,7 @@ static void prim_fetchurl(EvalState & state, const PosIdx pos, Value * * args, V
     fetch(state, pos, args, v, "fetchurl", false, "");
 }
 
-static RegisterPrimOp primop_fetchurl({
+PrimOp primop_fetchurl({
     .name = "__fetchurl",
     .args = {"url"},
     .doc = R"(
@@ -306,7 +306,7 @@ static void prim_fetchTarball(EvalState & state, const PosIdx pos, Value * * arg
     fetch(state, pos, args, v, "fetchTarball", true, "source");
 }
 
-static RegisterPrimOp primop_fetchTarball({
+PrimOp primop_fetchTarball({
     .name = "fetchTarball",
     .args = {"args"},
     .doc = R"(
@@ -356,7 +356,7 @@ static void prim_fetchGit(EvalState & state, const PosIdx pos, Value * * args, V
     fetchTree(state, pos, args, v, "git", FetchTreeParams { .emptyRevFallback = true, .allowNameArgument = true });
 }
 
-static RegisterPrimOp primop_fetchGit({
+PrimOp primop_fetchGit({
     .name = "fetchGit",
     .args = {"args"},
     .doc = R"(

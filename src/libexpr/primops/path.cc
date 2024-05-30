@@ -154,7 +154,7 @@ static void prim_dirOf(EvalState & state, const PosIdx pos, Value ** args, Value
     }
 }
 
-static RegisterPrimOp primop_dirOf({
+PrimOp primop_dirOf({
     .name = "dirOf",
     .args = {"s"},
     .doc = R"(
@@ -194,7 +194,7 @@ static void prim_filterSource(EvalState & state, const PosIdx pos, Value ** args
     );
 }
 
-static RegisterPrimOp primop_filterSource({
+PrimOp primop_filterSource({
     .name = "__filterSource",
     .args = {"e1", "e2"},
     .doc = R"(
@@ -314,7 +314,7 @@ static void prim_findFile(EvalState & state, const PosIdx pos, Value ** args, Va
     v.mkPath(state.checkSourcePath(state.findFile(searchPath, path, pos)));
 }
 
-static RegisterPrimOp primop_findFile(PrimOp{
+PrimOp primop_findFile(PrimOp{
     .name = "__findFile",
     .args = {"search path", "lookup path"},
     .doc = R"(
@@ -386,7 +386,7 @@ static void prim_outputOf(EvalState & state, const PosIdx pos, Value ** args, Va
     );
 }
 
-static RegisterPrimOp primop_outputOf({
+PrimOp primop_outputOf({
     .name = "__outputOf",
     .args = {"derivation-reference", "output-name"},
     .doc = R"(
@@ -488,7 +488,7 @@ static void prim_path(EvalState & state, const PosIdx pos, Value ** args, Value 
     addPath(state, pos, name, path->path.abs(), filterFun, method, expectedHash, v, context);
 }
 
-static RegisterPrimOp primop_path({
+PrimOp primop_path({
     .name = "__path",
     .args = {"args"},
     .doc = R"(
@@ -559,7 +559,7 @@ static void prim_pathExists(EvalState & state, const PosIdx pos, Value ** args, 
     }
 }
 
-static RegisterPrimOp primop_pathExists({
+PrimOp primop_pathExists({
     .name = "__pathExists",
     .args = {"path"},
     .doc = R"(
@@ -587,7 +587,7 @@ static void prim_placeholder(EvalState & state, const PosIdx pos, Value ** args,
     )));
 }
 
-static RegisterPrimOp primop_placeholder({
+PrimOp primop_placeholder({
     .name = "placeholder",
     .args = {"output"},
     .doc = R"(
@@ -612,7 +612,7 @@ static void prim_toPath(EvalState & state, const PosIdx pos, Value ** args, Valu
     v.mkString(path.path.abs(), context);
 }
 
-static RegisterPrimOp primop_toPath({
+PrimOp primop_toPath({
     .name = "__toPath",
     .args = {"s"},
     .doc = R"(
@@ -664,7 +664,7 @@ static void prim_readDir(EvalState & state, const PosIdx pos, Value ** args, Val
     v.mkAttrs(attrs);
 }
 
-static RegisterPrimOp primop_readDir({
+PrimOp primop_readDir({
     .name = "__readDir",
     .args = {"path"},
     .doc = R"(
@@ -720,7 +720,7 @@ static void prim_readFile(EvalState & state, const PosIdx pos, Value ** args, Va
     v.mkString(s, context);
 }
 
-static RegisterPrimOp primop_readFile({
+PrimOp primop_readFile({
     .name = "__readFile",
     .args = {"path"},
     .doc = R"(
@@ -740,7 +740,7 @@ static void prim_readFileType(EvalState & state, const PosIdx pos, Value ** args
     v.mkString(fileTypeToString(path.lstat().type));
 }
 
-static RegisterPrimOp primop_readFileType({
+PrimOp primop_readFileType({
     .name = "__readFileType",
     .args = {"p"},
     .doc = R"(
@@ -788,7 +788,7 @@ static void prim_storePath(EvalState & state, const PosIdx pos, Value ** args, V
     v.mkString(path.abs(), context);
 }
 
-static RegisterPrimOp primop_storePath({
+PrimOp primop_storePath({
     .name = "__storePath",
     .args = {"path"},
     .doc = R"(
@@ -852,7 +852,7 @@ static void prim_toFile(EvalState & state, const PosIdx pos, Value ** args, Valu
     state.allowAndSetStorePathString(storePath, v);
 }
 
-static RegisterPrimOp primop_toFile({
+PrimOp primop_toFile({
     .name = "__toFile",
     .args = {"name", "s"},
     .doc = R"(

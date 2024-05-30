@@ -207,7 +207,7 @@ static void prim_fetchClosure(EvalState & state, const PosIdx pos, Value * * arg
         runFetchClosureWithContentAddressedPath(state, pos, *fromStore, *fromPath, v);
 }
 
-static RegisterPrimOp primop_fetchClosure({
+PrimOp primop_fetchClosure({
     .name = "__fetchClosure",
     .args = {"args"},
     .doc = R"(

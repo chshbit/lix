@@ -159,7 +159,7 @@ prim_addDrvOutputDependencies(EvalState & state, const PosIdx pos, Value ** args
     v.mkString(*s, context2);
 }
 
-static RegisterPrimOp primop_addDrvOutputDependencies(
+PrimOp primop_addDrvOutputDependencies(
     {.name = "__addDrvOutputDependencies",
      .args = {"s"},
      .doc = R"(
@@ -202,7 +202,7 @@ static void prim_addErrorContext(EvalState & state, const PosIdx pos, Value ** a
     }
 }
 
-static RegisterPrimOp primop_addErrorContext(PrimOp{
+PrimOp primop_addErrorContext(PrimOp{
     .name = "__addErrorContext",
     .arity = 2,
     .fun = prim_addErrorContext,
@@ -310,7 +310,7 @@ static void prim_appendContext(EvalState & state, const PosIdx pos, Value ** arg
     v.mkString(orig, context);
 }
 
-static RegisterPrimOp primop_appendContext({
+PrimOp primop_appendContext({
     .name = "__appendContext",
     .arity = 2,
     .fun = prim_appendContext,
@@ -397,7 +397,7 @@ static void prim_getContext(EvalState & state, const PosIdx pos, Value ** args, 
     v.mkAttrs(attrs);
 }
 
-static RegisterPrimOp primop_getContext({
+PrimOp primop_getContext({
     .name = "__getContext",
     .args = {"s"},
     .doc = R"(
@@ -435,7 +435,7 @@ static void prim_hasContext(EvalState & state, const PosIdx pos, Value ** args, 
     v.mkBool(!context.empty());
 }
 
-static RegisterPrimOp primop_hasContext(
+PrimOp primop_hasContext(
     {.name = "__hasContext",
      .args = {"s"},
      .doc = R"(
@@ -487,7 +487,7 @@ prim_unsafeDiscardOutputDependency(EvalState & state, const PosIdx pos, Value **
     v.mkString(*s, context2);
 }
 
-static RegisterPrimOp primop_unsafeDiscardOutputDependency(
+PrimOp primop_unsafeDiscardOutputDependency(
     {.name = "__unsafeDiscardOutputDependency",
      .args = {"s"},
      .doc = R"(
@@ -523,7 +523,7 @@ prim_unsafeDiscardStringContext(EvalState & state, const PosIdx pos, Value ** ar
     v.mkString(*s);
 }
 
-static RegisterPrimOp primop_unsafeDiscardStringContext({
+PrimOp primop_unsafeDiscardStringContext({
     .name = "__unsafeDiscardStringContext",
     .arity = 1,
     .fun = prim_unsafeDiscardStringContext,

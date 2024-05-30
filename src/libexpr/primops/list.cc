@@ -45,7 +45,7 @@ static void prim_all(EvalState & state, const PosIdx pos, Value ** args, Value &
     anyOrAll(false, state, pos, args, v);
 }
 
-static RegisterPrimOp primop_all({
+PrimOp primop_all({
     .name = "__all",
     .args = {"pred", "list"},
     .doc = R"(
@@ -64,7 +64,7 @@ static void prim_any(EvalState & state, const PosIdx pos, Value ** args, Value &
     anyOrAll(true, state, pos, args, v);
 }
 
-static RegisterPrimOp primop_any({
+PrimOp primop_any({
     .name = "__any",
     .args = {"pred", "list"},
     .doc = R"(
@@ -92,7 +92,7 @@ static void prim_concatLists(EvalState & state, const PosIdx pos, Value ** args,
     );
 }
 
-static RegisterPrimOp primop_concatLists({
+PrimOp primop_concatLists({
     .name = "__concatLists",
     .args = {"lists"},
     .doc = R"(
@@ -142,7 +142,7 @@ static void prim_concatMap(EvalState & state, const PosIdx pos, Value ** args, V
     }
 }
 
-static RegisterPrimOp primop_concatMap({
+PrimOp primop_concatMap({
     .name = "__concatMap",
     .args = {"f", "list"},
     .doc = R"(
@@ -175,7 +175,7 @@ static void prim_elem(EvalState & state, const PosIdx pos, Value ** args, Value 
     v.mkBool(res);
 }
 
-static RegisterPrimOp primop_elem({
+PrimOp primop_elem({
     .name = "__elem",
     .args = {"x", "xs"},
     .doc = R"(
@@ -202,7 +202,7 @@ static void prim_elemAt(EvalState & state, const PosIdx pos, Value ** args, Valu
     );
 }
 
-static RegisterPrimOp primop_elemAt({
+PrimOp primop_elemAt({
     .name = "__elemAt",
     .args = {"xs", "n"},
     .doc = R"(
@@ -287,7 +287,7 @@ static void prim_foldlStrict(EvalState & state, const PosIdx pos, Value ** args,
     }
 }
 
-static RegisterPrimOp primop_foldlStrict({
+PrimOp primop_foldlStrict({
     .name = "__foldl'",
     .args = {"op", "nul", "list"},
     .doc = R"(
@@ -325,7 +325,7 @@ static void prim_genList(EvalState & state, const PosIdx pos, Value ** args, Val
     }
 }
 
-static RegisterPrimOp primop_genList({
+PrimOp primop_genList({
     .name = "__genList",
     .args = {"generator", "length"},
     .doc = R"(
@@ -348,7 +348,7 @@ static void prim_head(EvalState & state, const PosIdx pos, Value ** args, Value 
     elemAt(state, pos, *args[0], 0, v);
 }
 
-static RegisterPrimOp primop_head({
+PrimOp primop_head({
     .name = "__head",
     .args = {"list"},
     .doc = R"(
@@ -368,7 +368,7 @@ static void prim_length(EvalState & state, const PosIdx pos, Value ** args, Valu
     state.forceList(*args[0], pos, "while evaluating the first argument passed to builtins.length");
     v.mkInt(args[0]->listSize());
 }
-static RegisterPrimOp primop_length({
+PrimOp primop_length({
     .name = "__length",
     .args = {"e"},
     .doc = R"(
@@ -377,7 +377,7 @@ static RegisterPrimOp primop_length({
     .fun = prim_length,
 });
 
-static RegisterPrimOp primop_filter({
+PrimOp primop_filter({
     .name = "__filter",
     .args = {"f", "list"},
     .doc = R"(
@@ -425,7 +425,7 @@ static void prim_listToAttrs(EvalState & state, const PosIdx pos, Value ** args,
     v.mkAttrs(attrs);
 }
 
-static RegisterPrimOp primop_listToAttrs({
+PrimOp primop_listToAttrs({
     .name = "__listToAttrs",
     .args = {"e"},
     .doc = R"(
@@ -479,7 +479,7 @@ static void prim_map(EvalState & state, const PosIdx pos, Value ** args, Value &
     }
 }
 
-static RegisterPrimOp primop_map({
+PrimOp primop_map({
     .name = "map",
     .args = {"f", "list"},
     .doc = R"(
@@ -549,7 +549,7 @@ static void prim_partition(EvalState & state, const PosIdx pos, Value ** args, V
     v.mkAttrs(attrs);
 }
 
-static RegisterPrimOp primop_partition({
+PrimOp primop_partition({
     .name = "__partition",
     .args = {"pred", "list"},
     .doc = R"(
@@ -624,7 +624,7 @@ static void prim_sort(EvalState & state, const PosIdx pos, Value ** args, Value 
     std::stable_sort(v.listElems(), v.listElems() + len, comparator);
 }
 
-static RegisterPrimOp primop_sort({
+PrimOp primop_sort({
     .name = "__sort",
     .args = {"comparator", "list"},
     .doc = R"(
@@ -662,7 +662,7 @@ static void prim_tail(EvalState & state, const PosIdx pos, Value ** args, Value 
     }
 }
 
-static RegisterPrimOp primop_tail({
+PrimOp primop_tail({
     .name = "__tail",
     .args = {"list"},
     .doc = R"(

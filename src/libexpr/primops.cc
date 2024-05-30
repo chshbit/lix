@@ -18,6 +18,114 @@
 
 namespace nix {
 
+/**
+ * List of primops to be regisered explicitely
+ */
+
+extern PrimOp primop_abort;
+extern PrimOp primop_add;
+extern PrimOp primop_addDrvOutputDependencies;
+extern PrimOp primop_addErrorContext;
+extern PrimOp primop_all;
+extern PrimOp primop_any;
+extern PrimOp primop_appendContext;
+extern PrimOp primop_attrNames;
+extern PrimOp primop_attrValues;
+extern PrimOp primop_baseNameOf;
+extern PrimOp primop_bitAnd;
+extern PrimOp primop_bitOr;
+extern PrimOp primop_bitXor;
+extern PrimOp primop_break;
+extern PrimOp primop_catAttrs;
+extern PrimOp primop_ceil;
+extern PrimOp primop_compareVersions;
+extern PrimOp primop_concatLists;
+extern PrimOp primop_concatMap;
+extern PrimOp primop_concatStringsSep;
+extern PrimOp primop_deepSeq;
+extern PrimOp primop_derivationStrict;
+extern PrimOp primop_dirOf;
+extern PrimOp primop_div;
+extern PrimOp primop_elem;
+extern PrimOp primop_elemAt;
+extern PrimOp primop_fetchClosure;
+extern PrimOp primop_fetchGit;
+extern PrimOp primop_fetchMercurial;
+extern PrimOp primop_fetchTarball;
+extern PrimOp primop_fetchTree;
+extern PrimOp primop_fetchurl;
+extern PrimOp primop_filter;
+extern PrimOp primop_filterSource;
+extern PrimOp primop_findFile;
+extern PrimOp primop_floor;
+extern PrimOp primop_foldlStrict;
+extern PrimOp primop_fromJSON;
+extern PrimOp primop_fromTOML;
+extern PrimOp primop_functionArgs;
+extern PrimOp primop_genericClosure;
+extern PrimOp primop_genList;
+extern PrimOp primop_getAttr;
+extern PrimOp primop_getContext;
+extern PrimOp primop_getEnv;
+extern PrimOp primop_groupBy;
+extern PrimOp primop_hasAttr;
+extern PrimOp primop_hasContext;
+extern PrimOp primop_hashFile;
+extern PrimOp primop_hashString;
+extern PrimOp primop_head;
+extern PrimOp primop_import;
+extern PrimOp primop_intersectAttrs;
+extern PrimOp primop_isAttrs;
+extern PrimOp primop_isBool;
+extern PrimOp primop_isFloat;
+extern PrimOp primop_isFunction;
+extern PrimOp primop_isInt;
+extern PrimOp primop_isList;
+extern PrimOp primop_isNull;
+extern PrimOp primop_isPath;
+extern PrimOp primop_isString;
+extern PrimOp primop_length;
+extern PrimOp primop_lessThan;
+extern PrimOp primop_listToAttrs;
+extern PrimOp primop_map;
+extern PrimOp primop_mapAttrs;
+extern PrimOp primop_match;
+extern PrimOp primop_mul;
+extern PrimOp primop_outputOf;
+extern PrimOp primop_parseDrvName;
+extern PrimOp primop_partition;
+extern PrimOp primop_path;
+extern PrimOp primop_pathExists;
+extern PrimOp primop_placeholder;
+extern PrimOp primop_readDir;
+extern PrimOp primop_readFile;
+extern PrimOp primop_readFileType;
+extern PrimOp primop_removeAttrs;
+extern PrimOp primop_replaceStrings;
+extern PrimOp primop_scopedImport;
+extern PrimOp primop_seq;
+extern PrimOp primop_sort;
+extern PrimOp primop_split;
+extern PrimOp primop_splitVersion;
+extern PrimOp primop_storePath;
+extern PrimOp primop_stringLength;
+extern PrimOp primop_sub;
+extern PrimOp primop_substring;
+extern PrimOp primop_tail;
+extern PrimOp primop_throw;
+extern PrimOp primop_toFile;
+extern PrimOp primop_toJSON;
+extern PrimOp primop_toPath;
+extern PrimOp primop_toString;
+extern PrimOp primop_toXML;
+extern PrimOp primop_trace;
+extern PrimOp primop_tryEval;
+extern PrimOp primop_typeOf;
+extern PrimOp primop_unsafeDiscardOutputDependency;
+extern PrimOp primop_unsafeDiscardStringContext;
+extern PrimOp primop_unsafeGetAttrPos;
+extern PrimOp primop_zipAttrsWith;
+
 RegisterPrimOp::PrimOps * RegisterPrimOp::primOps;
 
 RegisterPrimOp::RegisterPrimOp(PrimOp && primOp)
@@ -312,6 +420,124 @@ void EvalState::createBaseEnv()
         }
     );
 
+    auto registerPrimOp = [this](PrimOp & p) {
+        // Only register the primop if the associated experimental feature is enabled
+        if (experimentalFeatureSettings.isEnabled(p.experimentalFeature)) {
+            auto adjusted = p;
+            adjusted.arity = std::max(p.args.size(), p.arity); // Don't trust what is defined
+            addPrimOp(std::move(adjusted));
+        }
+    };
+
+    /**
+     * Register the primops explicitely
+     */
+
+    registerPrimOp(primop_abort);
+    registerPrimOp(primop_add);
+    registerPrimOp(primop_addDrvOutputDependencies);
+    registerPrimOp(primop_addErrorContext);
+    registerPrimOp(primop_all);
+    registerPrimOp(primop_any);
+    registerPrimOp(primop_appendContext);
+    registerPrimOp(primop_attrNames);
+    registerPrimOp(primop_attrValues);
+    registerPrimOp(primop_baseNameOf);
+    registerPrimOp(primop_bitAnd);
+    registerPrimOp(primop_bitOr);
+    registerPrimOp(primop_bitXor);
+    registerPrimOp(primop_break);
+    registerPrimOp(primop_catAttrs);
+    registerPrimOp(primop_ceil);
+    registerPrimOp(primop_compareVersions);
+    registerPrimOp(primop_concatLists);
+    registerPrimOp(primop_concatMap);
+    registerPrimOp(primop_concatStringsSep);
+    registerPrimOp(primop_deepSeq);
+    registerPrimOp(primop_derivationStrict);
+    registerPrimOp(primop_dirOf);
+    registerPrimOp(primop_div);
+    registerPrimOp(primop_elem);
+    registerPrimOp(primop_elemAt);
+    registerPrimOp(primop_fetchClosure);
+    registerPrimOp(primop_fetchGit);
+    registerPrimOp(primop_fetchMercurial);
+    registerPrimOp(primop_fetchTarball);
+    registerPrimOp(primop_fetchTree);
+    registerPrimOp(primop_fetchurl);
+    registerPrimOp(primop_filter);
+    registerPrimOp(primop_filterSource);
+    registerPrimOp(primop_findFile);
+    registerPrimOp(primop_floor);
+    registerPrimOp(primop_foldlStrict);
+    registerPrimOp(primop_fromJSON);
+    registerPrimOp(primop_fromTOML);
+    registerPrimOp(primop_functionArgs);
+    registerPrimOp(primop_genericClosure);
+    registerPrimOp(primop_genList);
+    registerPrimOp(primop_getAttr);
+    registerPrimOp(primop_getContext);
+    registerPrimOp(primop_getEnv);
+    registerPrimOp(primop_groupBy);
+    registerPrimOp(primop_hasAttr);
+    registerPrimOp(primop_hasContext);
+    registerPrimOp(primop_hashFile);
+    registerPrimOp(primop_hashString);
+    registerPrimOp(primop_head);
+    registerPrimOp(primop_import);
+    registerPrimOp(primop_intersectAttrs);
+    registerPrimOp(primop_isAttrs);
+    registerPrimOp(primop_isBool);
+    registerPrimOp(primop_isFloat);
+    registerPrimOp(primop_isFunction);
+    registerPrimOp(primop_isInt);
+    registerPrimOp(primop_isList);
+    registerPrimOp(primop_isNull);
+    registerPrimOp(primop_isPath);
+    registerPrimOp(primop_isString);
+    registerPrimOp(primop_length);
+    registerPrimOp(primop_lessThan);
+    registerPrimOp(primop_listToAttrs);
+    registerPrimOp(primop_map);
+    registerPrimOp(primop_mapAttrs);
+    registerPrimOp(primop_match);
+    registerPrimOp(primop_mul);
+    registerPrimOp(primop_outputOf);
+    registerPrimOp(primop_parseDrvName);
+    registerPrimOp(primop_partition);
+    registerPrimOp(primop_path);
+    registerPrimOp(primop_pathExists);
+    registerPrimOp(primop_placeholder);
+    registerPrimOp(primop_readDir);
+    registerPrimOp(primop_readFile);
+    registerPrimOp(primop_readFileType);
+    registerPrimOp(primop_removeAttrs);
+    registerPrimOp(primop_replaceStrings);
+    registerPrimOp(primop_scopedImport);
+    registerPrimOp(primop_seq);
+    registerPrimOp(primop_sort);
+    registerPrimOp(primop_split);
+    registerPrimOp(primop_splitVersion);
+    registerPrimOp(primop_storePath);
+    registerPrimOp(primop_stringLength);
+    registerPrimOp(primop_sub);
+    registerPrimOp(primop_substring);
+    registerPrimOp(primop_tail);
+    registerPrimOp(primop_throw);
+    registerPrimOp(primop_toFile);
+    registerPrimOp(primop_toJSON);
+    registerPrimOp(primop_toPath);
+    registerPrimOp(primop_toString);
+    registerPrimOp(primop_toXML);
+    registerPrimOp(primop_trace);
+    registerPrimOp(primop_tryEval);
+    registerPrimOp(primop_typeOf);
+    registerPrimOp(primop_unsafeDiscardOutputDependency);
+    registerPrimOp(primop_unsafeDiscardStringContext);
+    registerPrimOp(primop_unsafeGetAttrPos);
+    registerPrimOp(primop_zipAttrsWith);
+
+    // Legacy way of registering primops, using c++ arcanes
     if (RegisterPrimOp::primOps) {
         for (auto & primOp : *RegisterPrimOp::primOps) {
             if (experimentalFeatureSettings.isEnabled(primOp.experimentalFeature)) {

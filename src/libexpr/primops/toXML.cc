@@ -15,7 +15,7 @@ static void prim_toXML(EvalState & state, const PosIdx pos, Value ** args, Value
     v.mkString(out.str(), context);
 }
 
-static RegisterPrimOp primop_toXML({
+PrimOp primop_toXML({
     .name = "__toXML",
     .args = {"e"},
     .doc = R"(

@@ -25,7 +25,7 @@ static void prim_add(EvalState & state, const PosIdx pos, Value ** args, Value &
     }
 }
 
-static RegisterPrimOp primop_add({
+PrimOp primop_add({
     .name = "__add",
     .args = {"e1", "e2"},
     .doc = R"(
@@ -52,7 +52,7 @@ static void prim_bitAnd(EvalState & state, const PosIdx pos, Value ** args, Valu
     );
 }
 
-static RegisterPrimOp primop_bitAnd({
+PrimOp primop_bitAnd({
     .name = "__bitAnd",
     .args = {"e1", "e2"},
     .doc = R"(
@@ -77,7 +77,7 @@ static void prim_bitOr(EvalState & state, const PosIdx pos, Value ** args, Value
     );
 }
 
-static RegisterPrimOp primop_bitOr({
+PrimOp primop_bitOr({
     .name = "__bitOr",
     .args = {"e1", "e2"},
     .doc = R"(
@@ -102,7 +102,7 @@ static void prim_bitXor(EvalState & state, const PosIdx pos, Value ** args, Valu
     );
 }
 
-static RegisterPrimOp primop_bitXor({
+PrimOp primop_bitXor({
     .name = "__bitXor",
     .args = {"e1", "e2"},
     .doc = R"(
@@ -125,7 +125,7 @@ static void prim_ceil(EvalState & state, const PosIdx pos, Value ** args, Value 
     v.mkInt(ceil(value));
 }
 
-static RegisterPrimOp primop_ceil({
+PrimOp primop_ceil({
     .name = "__ceil",
     .args = {"double"},
     .doc = R"(
@@ -172,7 +172,7 @@ static void prim_div(EvalState & state, const PosIdx pos, Value ** args, Value &
     }
 }
 
-static RegisterPrimOp primop_div({
+PrimOp primop_div({
     .name = "__div",
     .args = {"e1", "e2"},
     .doc = R"(
@@ -195,7 +195,7 @@ static void prim_floor(EvalState & state, const PosIdx pos, Value ** args, Value
     v.mkInt(floor(value));
 }
 
-static RegisterPrimOp primop_floor({
+PrimOp primop_floor({
     .name = "__floor",
     .args = {"double"},
     .doc = R"(
@@ -221,7 +221,7 @@ void prim_lessThan(EvalState & state, const PosIdx pos, Value ** args, Value & v
     v.mkBool(comp(args[0], args[1]));
 }
 
-static RegisterPrimOp primop_lessThan({
+PrimOp primop_lessThan({
     .name = "__lessThan",
     .args = {"e1", "e2"},
     .doc = R"(
@@ -259,7 +259,7 @@ static void prim_mul(EvalState & state, const PosIdx pos, Value ** args, Value &
     }
 }
 
-static RegisterPrimOp primop_mul({
+PrimOp primop_mul({
     .name = "__mul",
     .args = {"e1", "e2"},
     .doc = R"(
@@ -295,7 +295,7 @@ static void prim_sub(EvalState & state, const PosIdx pos, Value ** args, Value &
     }
 }
 
-static RegisterPrimOp primop_sub({
+PrimOp primop_sub({
     .name = "__sub",
     .args = {"e1", "e2"},
     .doc = R"(

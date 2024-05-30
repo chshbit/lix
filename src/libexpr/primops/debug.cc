@@ -72,7 +72,7 @@ static void prim_deepSeq(EvalState & state, const PosIdx pos, Value ** args, Val
     v = *args[1];
 }
 
-static RegisterPrimOp primop_deepSeq({
+PrimOp primop_deepSeq({
     .name = "__deepSeq",
     .args = {"e1", "e2"},
     .doc = R"(
@@ -94,7 +94,7 @@ static void prim_seq(EvalState & state, const PosIdx pos, Value ** args, Value &
     v = *args[1];
 }
 
-static RegisterPrimOp primop_seq({
+PrimOp primop_seq({
     .name = "__seq",
     .args = {"e1", "e2"},
     .doc = R"(
@@ -124,7 +124,7 @@ void prim_trace(EvalState & state, const PosIdx pos, Value ** args, Value & v)
     v = *args[1];
 }
 
-static RegisterPrimOp primop_trace({
+PrimOp primop_trace({
     .name = "__trace",
     .args = {"e1", "e2"},
     .doc = R"(
@@ -161,7 +161,7 @@ static void prim_unsafeGetAttrPos(EvalState & state, const PosIdx pos, Value ** 
     }
 }
 
-static RegisterPrimOp primop_unsafeGetAttrPos(PrimOp{
+PrimOp primop_unsafeGetAttrPos(PrimOp{
     .name = "__unsafeGetAttrPos",
     .arity = 2,
     .fun = prim_unsafeGetAttrPos,
