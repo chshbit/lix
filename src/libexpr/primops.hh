@@ -1,6 +1,7 @@
 #pragma once
 ///@file
 
+#include "derivations.hh"
 #include "eval.hh"
 
 #include <regex>
@@ -53,7 +54,16 @@ void prim_exec(EvalState & state, const PosIdx pos, Value ** args, Value & v);
 
 void prim_lessThan(EvalState & state, const PosIdx pos, Value ** args, Value & v);
 
+void prim_importNative(EvalState & state, const PosIdx pos, Value ** args, Value & v);
+
 void makePositionThunks(EvalState & state, const PosIdx pos, Value & line, Value & column);
+
+void mkOutputString(
+    EvalState & state,
+    BindingsBuilder & attrs,
+    const StorePath & drvPath,
+    const std::pair<std::string, DerivationOutput> & o
+);
 
 #if HAVE_BOEHMGC
 typedef std::list<Value *, gc_allocator<Value *>> ValueList;
