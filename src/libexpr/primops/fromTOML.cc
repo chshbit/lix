@@ -1,8 +1,27 @@
-#include "primops.hh"
-#include "eval-inline.hh"
-
-#include <sstream>
-#include <toml.hpp>
+#include <stddef.h>                  // for size_t
+#include <stdint.h>                  // for int64_t
+#include <exception>                 // for exception
+#include <functional>                // for function
+#include <sstream>                   // for char_traits, basic_ostringstream
+#include <stdexcept>                 // for runtime_error
+#include <string>                    // for basic_string, operator<<, operat...
+#include <toml/comments.hpp>         // for operator<<
+#include <toml/datetime.hpp>         // for operator<<
+#include <toml/get.hpp>              // for get
+#include <toml/parser.hpp>           // for parse
+#include <toml/serializer.hpp>       // for operator<<
+#include <toml/types.hpp>            // for value_t
+#include <toml/value.hpp>            // for value, table
+#include <unordered_map>             // for unordered_map, _Node_iterator
+#include <utility>                   // for pair
+#include <vector>                    // for vector
+#include "attr-set.hh"               // for BindingsBuilder
+#include "config.hh"                 // for ExperimentalFeatureSettings, exp...
+#include "eval-error.hh"             // for EvalError, EvalErrorBuilder
+#include "eval.hh"                   // for EvalState, PrimOp
+#include "experimental-features.hh"  // for ExperimentalFeature, Xp
+#include "pos-idx.hh"                // for PosIdx
+#include "value.hh"                  // for Value, NixFloat
 
 namespace nix {
 

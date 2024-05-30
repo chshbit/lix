@@ -1,15 +1,36 @@
-#include "primops.hh"
-#include "eval-inline.hh"
-#include "eval-settings.hh"
-#include "store-api.hh"
-#include "fetchers.hh"
-#include "filetransfer.hh"
-#include "registry.hh"
-#include "url.hh"
-
-#include <ctime>
-#include <iomanip>
-#include <regex>
+#include <assert.h>                                // for assert
+#include <stdint.h>                                // for uint64_t
+#include <ctime>                                   // for gmtime
+#include <iomanip>                                 // for put_time, operator<<
+#include <map>                                     // for operator==, map
+#include <optional>                                // for optional, operator==
+#include <regex>                                   // for regex_match, regex...
+#include <string>                                  // for char_traits, basic...
+#include <string_view>                             // for operator==, basic_...
+#include <utility>                                 // for move, pair
+#include "attr-set.hh"                             // for Attr, BindingsBuilder
+#include "attrs.hh"                                // for maybeGetStrAttr
+#include "config.hh"                               // for Setting, Experimen...
+#include "content-address.hh"                      // for FileIngestionMethod
+#include "eval-error.hh"                           // for EvalError, EvalErr...
+#include "eval-settings.hh"                        // for EvalSettings, eval...
+#include "eval.hh"                                 // for EvalState, PrimOp
+#include "experimental-features.hh"                // for ExperimentalFeature
+#include "fetchers.hh"                             // for Input, Tree, downl...
+#include "fmt.hh"                                  // for fmt
+#include "hash.hh"                                 // for Hash, HashType, Base
+#include "path-info.hh"                            // for ValidPathInfo
+#include "path.hh"                                 // for StorePath
+#include "pos-idx.hh"                              // for PosIdx
+#include "ref.hh"                                  // for ref
+#include "registry.hh"                             // for lookupInRegistries
+#include "store-api.hh"                            // for Store
+#include "symbol-table.hh"                         // for Symbol, SymbolTable
+#include "types.hh"                                // for BackedStringView
+#include "url.hh"                                  // for ParsedURL
+#include "util.hh"                                 // for baseNameOf
+#include "value.hh"                                // for Value, nAttrs, nBool
+#include "value/context.hh"                        // for NixStringContext
 
 namespace nix {
 

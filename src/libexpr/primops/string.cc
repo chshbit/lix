@@ -1,5 +1,24 @@
-#include "names.hh"
-#include "primops.hh"
+#include <assert.h>          // for assert
+#include <stddef.h>          // for size_t
+#include <iterator>          // for distance
+#include <memory>            // for shared_ptr, __shared_ptr_access, make_sh...
+#include <regex>             // for regex_error, match_results, cregex_iterator
+#include <string>            // for basic_string, char_traits, string
+#include <string_view>       // for basic_string_view
+#include <unordered_map>     // for unordered_map, operator==, _Node_iterator
+#include <utility>           // for move, pair
+#include <vector>            // for vector
+#include "attr-set.hh"       // for BindingsBuilder
+#include "eval-error.hh"     // for EvalError, EvalErrorBuilder
+#include "eval.hh"           // for EvalState, PrimOp, makeRegexCache, prim_...
+#include "names.hh"          // for DrvName, compareVersions, nextComponent
+#include "pos-idx.hh"        // for PosIdx
+#include "primops.hh"        // for RegexCache
+#include "symbol-table.hh"   // for Symbol
+#include "types.hh"          // for BackedStringView, Strings
+#include "util.hh"           // for baseNameOf, enumerate
+#include "value.hh"          // for Value, nString
+#include "value/context.hh"  // for NixStringContext
 
 namespace nix {
 

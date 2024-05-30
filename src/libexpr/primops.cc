@@ -1,20 +1,14 @@
-#include "derivations.hh"
-#include "eval.hh"
-#include "eval-settings.hh"
-#include "gc-small-vector.hh"
-#include "json-to-value.hh"
-#include "store-api.hh"
 #include "primops.hh"
-
-#include <boost/container/small_vector.hpp>
-#include <nlohmann/json.hpp>
-
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-
-#include <algorithm>
-#include <dlfcn.h>
+#include <time.h>            // for time
+#include <algorithm>         // for max
+#include "canon-path.hh"     // for CanonPath
+#include "config.hh"         // for Setting, ExperimentalFeatureSettings
+#include "eval-settings.hh"  // for EvalSettings, evalSettings
+#include "eval.hh"           // for EvalState, PrimOp, Env
+#include "nixexpr.hh"        // for StaticEnv
+#include "ref.hh"            // for ref
+#include "search-path.hh"    // for SearchPath
+#include "store-api.hh"      // for Store
 
 namespace nix {
 

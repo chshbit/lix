@@ -1,7 +1,23 @@
+#include <list>             // for list
+#include <string>           // for basic_string
+#include "attr-set.hh"      // for BindingsBuilder
+#include "error.hh"         // for Trace, Error, lvlInfo, ErrorInfo
+#include "eval-error.hh"    // for Abort, ThrownError, EvalErrorBuilder
 #include "eval-settings.hh"
-#include "primops.hh"
+#include "eval.hh"          // for EvalState, PrimOp, DebugTrace, ValMap
+#include "fmt.hh"           // for HintFmt
+#include "pos-idx.hh"       // for PosIdx
+#include "pos-table.hh"     // for PosTable
+#include "ref.hh"           // for ref
+#include "symbol-table.hh"  // for Symbol
+#include "types.hh"         // for BackedStringView
+#include "util.hh"          // for MaintainCount
+#include "value.hh"         // for Value
+#include "value/context.hh" // for NixStringContext
 
 namespace nix {
+
+enum class ReplExitStatus;
 
 /**
  * builtins.abort

@@ -1,8 +1,31 @@
-#include "downstream-placeholder.hh"
-#include "eval-settings.hh"
-#include "primops.hh"
-#include "derivations.hh"
-#include "store-api.hh"
+#include <map>                        // for map, _Rb_tree_const_iterator
+#include <memory>                     // for shared_ptr
+#include <string>                     // for basic_string, operator<=>, char...
+#include <utility>                    // for move, pair
+#include <variant>                    // for visit, get_if
+#include <vector>                     // for vector
+#include "attr-set.hh"                // for Attr, Bindings, BindingsBuilder
+#include "config.hh"                  // for Setting, ExperimentalFeatureSet...
+#include "derivations.hh"             // for isDerivation
+#include "derived-path.hh"            // for DerivedPath, makeConstantStoreP...
+#include "downstream-placeholder.hh"  // for DownstreamPlaceholder
+#include "error.hh"                   // for Error
+#include "eval-error.hh"              // for EvalError, EvalErrorBuilder
+#include "eval-settings.hh"           // for EvalSettings, evalSettings
+#include "eval.hh"                    // for EvalState, PrimOp
+#include "experimental-features.hh"   // for ExperimentalFeature, Xp
+#include "fmt.hh"                     // for HintFmt
+#include "globals.hh"                 // for Settings, settings
+#include "outputs-spec.hh"            // for OutputsSpec
+#include "path.hh"                    // for StorePath, StorePathSet
+#include "pos-idx.hh"                 // for PosIdx, noPos
+#include "ref.hh"                     // for ref
+#include "store-api.hh"               // for Store, resolveDerivedPath, copy...
+#include "symbol-table.hh"            // for SymbolStr, Symbol, SymbolTable
+#include "types.hh"                   // for StringMap, BackedStringView
+#include "util.hh"                    // for overloaded, enumerate
+#include "value.hh"                   // for Value
+#include "value/context.hh"           // for NixStringContextElem, NixString...
 
 namespace nix {
 

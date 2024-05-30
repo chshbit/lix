@@ -1,5 +1,11 @@
 #include "hash.hh"
-#include "primops.hh"
+#include "eval-error.hh"    // for EvalError, EvalErrorBuilder
+#include "eval.hh"          // for EvalState, PrimOp
+#include "pos-idx.hh"       // for PosIdx
+#include "primops.hh"       // for realisePath
+#include "source-path.hh"   // for SourcePath
+#include "value.hh"         // for Value
+#include "value/context.hh" // for NixStringContext
 
 namespace nix {
 

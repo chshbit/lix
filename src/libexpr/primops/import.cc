@@ -1,6 +1,26 @@
-#include "derivations.hh"
-#include "primops.hh"
-#include "store-api.hh"
+#include <dlfcn.h>           // for dlerror, dlopen, dlsym, RTLD_LAZY, RTLD_...
+#include <memory>            // for allocator, __shared_ptr_access, shared_ptr
+#include <optional>          // for optional, nullopt, nullopt_t
+#include <string>            // for basic_string, char_traits, string, opera...
+#include <utility>           // for pair
+#include "attr-set.hh"       // for BindingsBuilder, Bindings, Attr
+#include "canon-path.hh"     // for CanonPath
+#include "derivations.hh"    // for Derivation, DerivationOutput, isDerivation
+#include "derived-path.hh"   // for makeConstantStorePathRef, SingleDerivedPath
+#include "eval-error.hh"     // for EvalError, EvalErrorBuilder
+#include "eval.hh"           // for EvalState, PrimOp, Env, resolveExprPath
+#include "logging.hh"        // for Logger, debug
+#include "nixexpr.hh"        // for StaticEnv, Expr
+#include "path.hh"           // for StorePath
+#include "pos-idx.hh"        // for PosIdx
+#include "primops.hh"        // for realisePath, prim_importNative, mkOutput...
+#include "ref.hh"            // for ref
+#include "source-path.hh"    // for SourcePath
+#include "store-api.hh"      // for Store
+#include "symbol-table.hh"   // for Symbol
+#include "util.hh"           // for enumerate
+#include "value.hh"          // for Value, allocRootValue
+#include "value/context.hh"  // for NixStringContextElem
 
 namespace nix {
 

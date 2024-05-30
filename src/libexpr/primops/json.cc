@@ -1,6 +1,11 @@
-#include "json-to-value.hh"
-#include "primops.hh"
-#include "value-to-json.hh"
+#include <sstream>          // for basic_ostringstream, basic_ios, basic_os...
+#include "eval.hh"          // for PrimOp, EvalState
+#include "json-to-value.hh" // for JSONParseError, parseJSON
+#include "pos-idx.hh"       // for PosIdx
+#include "pos-table.hh"     // for PosTable
+#include "value-to-json.hh" // for printValueAsJSON
+#include "value.hh"         // for Value
+#include "value/context.hh" // for NixStringContext
 
 namespace nix {
 

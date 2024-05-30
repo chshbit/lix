@@ -1,5 +1,21 @@
-#include "gc-small-vector.hh"
-#include "primops.hh"
+#include <string.h>                         // for size_t, memcpy, strcmp
+#include <algorithm>                        // for sort, min, set_difference
+#include <boost/container/small_vector.hpp> // for small_vector
+#include <boost/container/vector.hpp>       // for operator+, operator-
+#include <iterator>                         // for back_insert_iterator
+#include <map>                              // for map, _Rb_tree_iterator
+#include <set>                              // for set
+#include <string_view>                      // for string_view, operator<=>
+#include <utility>                          // for pair
+#include <vector>                           // for vector
+#include "attr-set.hh"                      // for Attr, Bindings, Bindings...
+#include "eval-error.hh"                    // for TypeError, EvalErrorBuilder
+#include "eval.hh"                          // for EvalState, PrimOp, prim_...
+#include "gc-small-vector.hh"               // for SmallValueVector
+#include "pos-idx.hh"                       // for PosIdx, noPos
+#include "primops.hh"                       // for CompareValues, ValueList
+#include "symbol-table.hh"                  // for Symbol, SymbolTable, Sym...
+#include "value.hh"                         // for Value, ValueVector, Valu...
 
 namespace nix {
 

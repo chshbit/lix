@@ -1,8 +1,39 @@
-#include "primops.hh"
-#include "store-api.hh"
-#include "value-to-json.hh"
-
-#include <nlohmann/json.hpp>
+#include <map>                                     // for _Rb_tree_const_ite...
+#include <memory>                                  // for allocator, shared_ptr
+#include <nlohmann/json.hpp>                       // for basic_json
+#include <nlohmann/json_fwd.hpp>                   // for json
+#include <optional>                                // for optional, operator==
+#include <set>                                     // for set
+#include <string>                                  // for char_traits, basic...
+#include <string_view>                             // for operator==, basic_...
+#include <utility>                                 // for move, pair
+#include <variant>                                 // for visit
+#include "attr-set.hh"                             // for Attr, Bindings
+#include "config.hh"                               // for ExperimentalFeatur...
+#include "content-address.hh"                      // for ContentAddressMethod
+#include "derivations.hh"                          // for Derivation, Deriva...
+#include "derived-path-map.hh"                     // for DerivedPathMap
+#include "error.hh"                                // for Error, lvlChatty
+#include "eval-error.hh"                           // for EvalError, EvalErr...
+#include "eval.hh"                                 // for EvalState, PrimOp
+#include "experimental-features.hh"                // for ExperimentalFeature
+#include "fmt.hh"                                  // for HintFmt
+#include "hash.hh"                                 // for parseHashTypeOpt
+#include "logging.hh"                              // for Logger, printMsg
+#include "path.hh"                                 // for StorePath, StorePa...
+#include "pos-idx.hh"                              // for PosIdx, noPos
+#include "pos-table.hh"                            // for PosTable
+#include "position.hh"                             // for Pos, operator<<
+#include "primops.hh"                              // for getAttr, mkOutputS...
+#include "ref.hh"                                  // for ref
+#include "store-api.hh"                            // for Store
+#include "symbol-table.hh"                         // for Symbol, SymbolStr
+#include "sync.hh"                                 // for Sync
+#include "types.hh"                                // for Strings, BackedStr...
+#include "util.hh"                                 // for get, tokenizeString
+#include "value-to-json.hh"                        // for printValueAsJSON
+#include "value.hh"                                // for Value, nNull
+#include "value/context.hh"                        // for NixStringContextElem
 
 namespace nix {
 

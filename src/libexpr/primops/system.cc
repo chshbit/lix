@@ -1,7 +1,22 @@
-#include "eval-settings.hh"
-#include "primops.hh"
+#include <optional>                                // for optional
+#include <string>                                  // for basic_string, char...
+#include <utility>                                 // for move
+#include "canon-path.hh"                           // for CanonPath
+#include "error.hh"                                // for Error
+#include "eval-error.hh"                           // for EvalError, EvalErr...
+#include "eval-settings.hh"                        // for EvalSettings, eval...
+#include "eval.hh"                                 // for EvalState, PrimOp
+#include "pos-idx.hh"                              // for PosIdx
+#include "pos-table.hh"                            // for PosTable
+#include "primops.hh"                              // for prim_exec
+#include "types.hh"                                // for BackedStringView
+#include "util.hh"                                 // for getEnv, runProgram
+#include "value.hh"                                // for Value
+#include "value/context.hh"                        // for NixStringContext
 
 namespace nix {
+
+struct Expr;
 
 /**
  * builtins.exec

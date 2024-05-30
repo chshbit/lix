@@ -1,5 +1,16 @@
-#include "eval-settings.hh"
-#include "primops.hh"
+#include <list>             // for list
+#include <string>           // for basic_string
+#include "attr-set.hh"      // for Bindings
+#include "eval-settings.hh" // for EvalSettings, evalSettings
+#include "eval.hh"          // for EvalState, PrimOp, DebugTrace
+#include "logging.hh"       // for Logger, printError
+#include "pos-idx.hh"       // for PosIdx
+#include "pos-table.hh"     // for PosTable
+#include "position.hh"      // for Pos
+#include "primops.hh"       // for makePositionThunks, prim_second, prim_trace
+#include "print.hh"         // for ValuePrinter
+#include "symbol-table.hh"  // for SymbolTable
+#include "value.hh"         // for Value, nString
 
 namespace nix {
 

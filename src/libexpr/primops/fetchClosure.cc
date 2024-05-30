@@ -1,7 +1,20 @@
-#include "primops.hh"
-#include "store-api.hh"
-#include "make-content-addressed.hh"
-#include "url.hh"
+#include <optional>                                // for optional
+#include <string>                                  // for allocator, char_tr...
+#include "attr-set.hh"                             // for Attr, Bindings
+#include "error.hh"                                // for Error, Trace
+#include "eval.hh"                                 // for EvalState, PrimOp
+#include "experimental-features.hh"                // for ExperimentalFeature
+#include "fmt.hh"                                  // for HintFmt
+#include "make-content-addressed.hh"               // for makeContentAddressed
+#include "path-info.hh"                            // for ValidPathInfo
+#include "path.hh"                                 // for StorePath
+#include "pos-idx.hh"                              // for PosIdx
+#include "realisation.hh"                          // for RealisedPath
+#include "store-api.hh"                            // for Store, copyClosure
+#include "url.hh"                                  // for ParsedURL, parseURL
+#include "util.hh"                                 // for getEnv, operator+
+#include "value.hh"                                // for Value, nString
+#include "value/context.hh"                        // for NixStringContext
 
 namespace nix {
 

@@ -1,4 +1,10 @@
-#include "primops.hh"
+#include <math.h>        // for ceil, floor
+#include <limits>        // for numeric_limits
+#include "eval-error.hh" // for EvalError, EvalErrorBuilder
+#include "eval.hh"       // for EvalState, PrimOp
+#include "pos-idx.hh"    // for PosIdx, noPos
+#include "primops.hh"    // for CompareValues, prim_lessThan
+#include "value.hh"      // for Value, nFloat, NixInt, NixFloat
 
 namespace nix {
 

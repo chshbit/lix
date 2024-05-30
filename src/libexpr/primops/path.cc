@@ -1,8 +1,42 @@
-#include "eval-settings.hh"
-#include "fetch-to-store.hh"
-#include "path-references.hh"
-#include "primops.hh"
-#include "store-api.hh"
+#include <sys/stat.h>                              // for stat, S_ISDIR, S_I...
+#include <list>                                    // for list
+#include <optional>                                // for optional, operator!=
+#include <set>                                     // for _Rb_tree_const_ite...
+#include <string>                                  // for basic_string, char...
+#include <string_view>                             // for string_view
+#include <utility>                                 // for move, pair
+#include <variant>                                 // for get_if
+#include "attr-set.hh"                             // for Attr, Bindings
+#include "canon-path.hh"                           // for CanonPath
+#include "content-address.hh"                      // for FileIngestionMethod
+#include "derivations.hh"                          // for hashPlaceholder
+#include "derived-path.hh"                         // for SingleDerivedPath
+#include "error.hh"                                // for Error, SysError
+#include "eval-error.hh"                           // for EvalError, EvalErr...
+#include "eval-settings.hh"                        // for EvalSettings, eval...
+#include "eval.hh"                                 // for EvalState, PrimOp
+#include "experimental-features.hh"                // for ExperimentalFeature
+#include "fetch-to-store.hh"                       // for fetchToStore
+#include "globals.hh"                              // for Settings, settings
+#include "hash.hh"                                 // for Hash, newHashAllow...
+#include "input-accessor.hh"                       // for InputAccessor
+#include "outputs-spec.hh"                         // for OutputNameView
+#include "path-info.hh"                            // for ValidPathInfo
+#include "path-references.hh"                      // for PathRefScanSink
+#include "path.hh"                                 // for StorePath, StorePa...
+#include "pos-idx.hh"                              // for PosIdx, noPos
+#include "pos-table.hh"                            // for PosTable
+#include "primops.hh"                              // for RealisePathFlags
+#include "ref.hh"                                  // for ref, make_ref
+#include "search-path.hh"                          // for SearchPath
+#include "serialise.hh"                            // for operator<<, Sink
+#include "source-path.hh"                          // for SourcePath, Symlin...
+#include "store-api.hh"                            // for Store
+#include "symbol-table.hh"                         // for Symbol, SymbolStr
+#include "types.hh"                                // for BackedStringView
+#include "util.hh"                                 // for rewriteStrings
+#include "value.hh"                                // for Value, nPath, nString
+#include "value/context.hh"                        // for NixStringContext
 
 namespace nix {
 

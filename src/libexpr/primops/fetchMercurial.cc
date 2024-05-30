@@ -1,10 +1,23 @@
-#include "primops.hh"
-#include "eval-inline.hh"
-#include "eval-settings.hh"
-#include "store-api.hh"
-#include "fetchers.hh"
-#include "url.hh"
-#include "url-parts.hh"
+#include <optional>          // for optional
+#include <regex>             // for regex_match
+#include <string>            // for allocator, char_traits, basic_string
+#include <string_view>       // for operator==, basic_string_view, string_view
+#include <utility>           // for move
+#include "attr-set.hh"       // for Attr, BindingsBuilder, Bindings
+#include "attrs.hh"          // for Attrs
+#include "error.hh"          // for Error
+#include "eval-error.hh"     // for EvalError, EvalErrorBuilder
+#include "eval-settings.hh"  // for EvalSettings, evalSettings
+#include "eval.hh"           // for EvalState, PrimOp
+#include "fetchers.hh"       // for Input, Tree
+#include "hash.hh"           // for Hash, HashType
+#include "pos-idx.hh"        // for PosIdx
+#include "ref.hh"            // for ref
+#include "symbol-table.hh"   // for Symbol, SymbolStr, SymbolTable
+#include "types.hh"          // for BackedStringView
+#include "url-parts.hh"      // for revRegex
+#include "value.hh"          // for Value, nAttrs
+#include "value/context.hh"  // for NixStringContext
 
 namespace nix {
 

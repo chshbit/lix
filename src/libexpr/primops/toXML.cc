@@ -1,5 +1,9 @@
-#include "primops.hh"
-#include "value-to-xml.hh"
+#include <sstream>           // for basic_ostringstream, basic_ios, basic_os...
+#include "eval.hh"           // for PrimOp, EvalState (ptr only)
+#include "pos-idx.hh"        // for PosIdx
+#include "value.hh"          // for Value
+#include "value-to-xml.hh"   // for printValueAsXML
+#include "value/context.hh"  // for NixStringContext
 
 namespace nix {
 

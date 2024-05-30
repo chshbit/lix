@@ -1,4 +1,12 @@
-#include "primops.hh"
+#include <stdlib.h>         // for abort
+#include <string>           // for basic_string, char_traits, string
+#include "attr-set.hh"      // for BindingsBuilder
+#include "eval-error.hh"    // for TypeError, EvalErrorBuilder
+#include "eval.hh"          // for PrimOp, EvalState
+#include "nixexpr.hh"       // for ExprLambda, Formal, Formals
+#include "pos-idx.hh"       // for PosIdx
+#include "symbol-table.hh"  // for Symbol
+#include "value.hh"         // for Value, nAttrs, nBool, nFloat, nFunction
 
 namespace nix {
 
