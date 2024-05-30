@@ -94,6 +94,7 @@ libexpr_sources = files(
   'primops/fetchMercurial.cc',
   'primops/fetchTree.cc',
   'primops/fromTOML.cc',
+  'primops/list.cc',
   'primops/string.cc',
   'value/context.cc',
 )

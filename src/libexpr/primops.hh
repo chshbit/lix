@@ -4,7 +4,6 @@
 #include "eval.hh"
 
 #include <regex>
-#include <tuple>
 #include <vector>
 
 namespace nix {
@@ -52,6 +51,8 @@ void prim_importNative(EvalState & state, const PosIdx pos, Value ** args, Value
  */
 void prim_exec(EvalState & state, const PosIdx pos, Value ** args, Value & v);
 
+void prim_lessThan(EvalState & state, const PosIdx pos, Value ** args, Value & v);
+
 void makePositionThunks(EvalState & state, const PosIdx pos, Value & line, Value & column);
 
 #if HAVE_BOEHMGC
@@ -64,7 +65,8 @@ typedef std::list<Value *> ValueList;
  * getAttr wrapper
  */
 
-Bindings::iterator getAttr(EvalState & state, Symbol attrSym, Bindings * attrSet, std::string_view errorCtx);
+Bindings::iterator
+getAttr(EvalState & state, Symbol attrSym, Bindings * attrSet, std::string_view errorCtx);
 
 /**
  * Struct definitions
@@ -79,18 +81,100 @@ struct RegexCache
     std::regex get(std::string_view re)
     {
         auto it = cache.find(re);
-        if (it != cache.end())
+        if (it != cache.end()) {
             return it->second;
+        }
         keys.emplace_back(re);
-        return cache.emplace(keys.back(), std::regex(keys.back(), std::regex::extended)).first->second;
+        return cache.emplace(keys.back(), std::regex(keys.back(), std::regex::extended))
+            .first->second;
     }
 };
 
-struct RealisePathFlags {
+struct CompareValues
+{
+    EvalState & state;
+    const PosIdx pos;
+    const std::string_view errorCtx;
+
+    CompareValues(EvalState & state, const PosIdx pos, const std::string_view && errorCtx)
+        : state(state)
+        , pos(pos)
+        , errorCtx(errorCtx){};
+
+    bool operator()(Value * v1, Value * v2) const
+    {
+        return (*this)(v1, v2, errorCtx);
+    }
+
+    bool operator()(Value * v1, Value * v2, std::string_view errorCtx) const
+    {
+        try {
+            if (v1->type() == nFloat && v2->type() == nInt) {
+                return v1->fpoint < v2->integer;
+            }
+            if (v1->type() == nInt && v2->type() == nFloat) {
+                return v1->integer < v2->fpoint;
+            }
+            if (v1->type() != v2->type()) {
+                state.error<EvalError>("cannot compare %s with %s", showType(*v1), showType(*v2))
+                    .debugThrow();
+            }
+// Allow selecting a subset of enum values
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch-enum"
+            switch (v1->type()) {
+            case nInt:
+                return v1->integer < v2->integer;
+            case nFloat:
+                return v1->fpoint < v2->fpoint;
+            case nString:
+                return strcmp(v1->string.s, v2->string.s) < 0;
+            case nPath:
+                return strcmp(v1->_path, v2->_path) < 0;
+            case nList:
+                // Lexicographic comparison
+                for (size_t i = 0;; i++) {
+                    if (i == v2->listSize()) {
+                        return false;
+                    } else if (i == v1->listSize()) {
+                        return true;
+                    } else if (!state.eqValues(
+                                   *v1->listElems()[i], *v2->listElems()[i], pos, errorCtx
+                               ))
+                    {
+                        return (*this)(
+                            v1->listElems()[i],
+                            v2->listElems()[i],
+                            "while comparing two list elements"
+                        );
+                    }
+                }
+            default:
+                state
+                    .error<EvalError>(
+                        "cannot compare %s with %s; values of that type are incomparable",
+                        showType(*v1),
+                        showType(*v2)
+                    )
+                    .debugThrow();
+#pragma GCC diagnostic pop
+            }
+        } catch (Error & e) {
+            if (!errorCtx.empty()) {
+                e.addTrace(nullptr, errorCtx);
+            }
+            throw;
+        }
+    }
+};
+
+struct RealisePathFlags
+{
     // Whether to check that the path is allowed in pure eval mode
     bool checkForPureEval = true;
 };
 
-SourcePath realisePath(EvalState & state, const PosIdx pos, Value & v, const RealisePathFlags flags = {});
+SourcePath
+realisePath(EvalState & state, const PosIdx pos, Value & v, const RealisePathFlags flags = {});
 
 }
