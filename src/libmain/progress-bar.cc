@@ -1,6 +1,4 @@
 #include "progress-bar.hh"
-#include "escape-string.hh"
-#include "logging.hh"
 #include "sync.hh"
 #include "store-api.hh"
 #include "names.hh"
@@ -41,85 +39,48 @@ static std::string_view storePathToName(std::string_view path)
 // 100 years ought to be enough for anyone (yet sufficiently smaller than max() to not cause signed integer overflow).
 constexpr const auto A_LONG_TIME = std::chrono::duration_cast<std::chrono::milliseconds>(100 * 365 * 86400s);
 
-
-struct ActInfo
-{
-    using TimePoint = std::chrono::time_point<std::chrono::steady_clock>;
-
-    std::string s;
-    std::string lastLine;
-    std::string phase;
-    ActivityType type = actUnknown;
-    uint64_t done = 0;
-    uint64_t expected = 0;
-    uint64_t running = 0;
-    uint64_t failed = 0;
-    std::map<ActivityType, uint64_t> expectedByType;
-    bool visible = true;
-    ActivityId parent;
-    std::optional<std::string> name;
-    TimePoint startTime;
-
-    std::string to_string() const
-    {
-        EscapeStringOptions escapeOptions{
-            .escapeNonPrinting = true,
-        };
-        auto const escapedS = escapeString(s, escapeOptions);
-        auto const escapedLastLine = escapeString(lastLine, escapeOptions);
-        auto const escapedPhase = escapeString(phase, escapeOptions);
-        auto const typeS = activityTypeToString(type);
-
-        return fmt(
-            "ActInfo {\n  s = %s,\n  lastLine = %s,\n  phase = %s,\n  type = %s,\n  done = %d\n  expected = %d,\n  running = %d,\n  failed = %d,\n  parent = %d,\n  name = %s,\n}",
-            escapedS,
-            escapedLastLine,
-            escapedPhase,
-            typeS,
-            done,
-            expected,
-            running,
-            failed,
-            parent,
-            name.value_or("<nullopt>")
-        );
-    }
-};
-
-using ActInfoIterator = std::list<ActInfo>::iterator;
-
-struct ActivitiesByType
-{
-    std::map<ActivityId, ActInfoIterator> its;
-    uint64_t done = 0;
-    uint64_t expected = 0;
-    uint64_t failed = 0;
-};
-
-struct BarState
-{
-    std::list<ActInfo> activities;
-    std::map<ActivityId, ActInfoIterator> its;
-
-    std::map<ActivityType, ActivitiesByType> activitiesByType;
-
-    uint64_t filesLinked = 0;
-    uint64_t bytesLinked = 0;
-    uint64_t corruptedPaths = 0;
-    uint64_t untrustedPaths = 0;
-
-    bool active = true;
-    bool paused = false;
-    bool haveUpdate = true;
-};
-
 class ProgressBar : public Logger
 {
 private:
 
-    //using ActInfo = ActInfo;
-    using ActivitiesByType = ActivitiesByType;
-    using State = BarState;
+    struct ActInfo
+    {
+        std::string s, lastLine, phase;
+        ActivityType type = actUnknown;
+        uint64_t done = 0;
+        uint64_t expected = 0;
+        uint64_t running = 0;
+        uint64_t failed = 0;
+        std::map<ActivityType, uint64_t> expectedByType;
+        bool visible = true;
+        ActivityId parent;
+        std::optional<std::string> name;
+        std::chrono::time_point<std::chrono::steady_clock> startTime;
+    };
+
+    struct ActivitiesByType
+    {
+        std::map<ActivityId, std::list<ActInfo>::iterator> its;
+        uint64_t done = 0;
+        uint64_t expected = 0;
+        uint64_t failed = 0;
+    };
+
+    struct State
+    {
+        std::list<ActInfo> activities;
+        std::map<ActivityId, std::list<ActInfo>::iterator> its;
+
+        std::map<ActivityType, ActivitiesByType> activitiesByType;
+
+        uint64_t filesLinked = 0, bytesLinked = 0;
+
+        uint64_t corruptedPaths = 0, untrustedPaths = 0;
+
+        bool active = true;
+        bool paused = false;
+        bool haveUpdate = true;
+    };
 
     Sync<State> state_;
 
@@ -454,13 +415,6 @@ public:
     std::string getStatus(State & state)
     {
         constexpr auto MiB = 1024.0 * 1024.0;
-        //this->cout("getStatus(): we have %d activities", state.activities.size());
-        //std::cerr << "\ngetStatus(): we have " << state.activities.size() << "\n";
-
-        if (!state.activities.empty()) {
-            ActInfo const & firstActivity = state.activities.front();
-            std::cerr << "\ngetStatus(): " << firstActivity.to_string() << "\n";
-        }
 
         std::string res;
 
@@ -479,49 +433,21 @@ public:
             std::string s;
 
             if (running || done || expected || failed) {
-                if (running) {
-                    if (expected != 0) {
-                        auto const runningPart = fmt(numberFmt, running / unit);
-                        auto const donePart = fmt(numberFmt, done / unit);
-                        auto const expectedPart = fmt(numberFmt, expected / unit);
-                        s = fmt(
-                            ANSI_BLUE "%s" ANSI_NORMAL "/" ANSI_GREEN "%s" ANSI_NORMAL "/%s",
-                            runningPart,
-                            donePart,
-                            expectedPart
-                        );
-                    } else {
-                        auto const runningPart = fmt(numberFmt, running / unit);
-                        auto const donePart = fmt(numberFmt, done / unit);
-                        s = fmt(
-                            ANSI_BLUE "%s" ANSI_NORMAL "/" ANSI_GREEN "%s" ANSI_NORMAL,
-                            runningPart,
-                            donePart
-                        );
-                    }
-                } else if (expected != done) {
-                    if (expected != 0) {
-                        auto const donePart = fmt(numberFmt, done / unit);
-                        auto const expectedPart = fmt(numberFmt, expected / unit);
-                        s = fmt(
-                            ANSI_GREEN "%s" ANSI_NORMAL "/%s",
-                            donePart,
-                            expectedPart
-                        );
-                    } else {
-                        auto const donePart = fmt(numberFmt, done / unit);
-                        s = fmt(ANSI_GREEN "%s" ANSI_NORMAL, donePart);
-                    }
-                } else {
-                    auto const donePart = fmt(numberFmt, done / unit);
-
-                    // We only color if `done` is non-zero.
-                    if (done) {
-                        s = concatStrings(ANSI_GREEN, donePart, ANSI_NORMAL);
-                    } else {
-                        s = donePart;
-                    }
-                }
+                if (running)
+                    if (expected != 0)
+                        s = fmt(ANSI_BLUE + numberFmt + ANSI_NORMAL "/" ANSI_GREEN + numberFmt + ANSI_NORMAL "/" + numberFmt,
+                            running / unit, done / unit, expected / unit);
+                    else
+                        s = fmt(ANSI_BLUE + numberFmt + ANSI_NORMAL "/" ANSI_GREEN + numberFmt + ANSI_NORMAL,
+                            running / unit, done / unit);
+                else if (expected != done)
+                    if (expected != 0)
+                        s = fmt(ANSI_GREEN + numberFmt + ANSI_NORMAL "/" + numberFmt,
+                            done / unit, expected / unit);
+                    else
+                        s = fmt(ANSI_GREEN + numberFmt + ANSI_NORMAL, done / unit);
+                else
+                    s = fmt(done ? ANSI_GREEN + numberFmt + ANSI_NORMAL : numberFmt, done / unit);
                 s = fmt(itemFmt, s);
 
                 if (failed)
@@ -532,10 +458,10 @@ public:
         };
 
         auto showActivity = [&](ActivityType type, const std::string & itemFmt, const std::string & numberFmt = "%d", double unit = 1) {
-            auto rendered = renderActivity(type, itemFmt, numberFmt, unit);
-            if (rendered.empty()) return;
+            auto s = renderActivity(type, itemFmt, numberFmt, unit);
+            if (s.empty()) return;
             if (!res.empty()) res += ", ";
-            res += rendered;
+            res += s;
         };
 
         showActivity(actBuilds, "%s built");
