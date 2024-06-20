@@ -23,6 +23,38 @@ typedef enum {
     actBuildWaiting = 111,
 } ActivityType;
 
+constexpr std::string_view activityTypeToString(ActivityType const & actType)
+{
+    switch (actType) {
+    case actUnknown:
+        return "Unknown";
+    case actCopyPath:
+        return "CopyPath";
+    case actFileTransfer:
+        return "FileTransfer";
+    case actRealise:
+        return "Realise";
+    case actCopyPaths:
+        return "CopyPaths";
+    case actBuilds:
+        return "Builds";
+    case actBuild:
+        return "Build";
+    case actOptimiseStore:
+        return "OptimiseStore";
+    case actVerifyPaths:
+        return "VerifyPaths";
+    case actSubstitute:
+        return "Substitute";
+    case actQueryPathInfo:
+        return "QueryPathInfo";
+    case actPostBuildHook:
+        return "PostBuildHook";
+    case actBuildWaiting:
+        return "BuildWaiting";
+    }
+}
+
 typedef enum {
     resFileLinked = 100,
     resBuildLogLine = 101,
