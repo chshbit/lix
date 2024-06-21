@@ -106,7 +106,8 @@ struct ProgressBar : public Logger
         ActivityId parent
     ) override;
 
-    bool hasAncestor(State & state, ActivityType type, ActivityId act);
+    /** Check whether an activity has an ancestor with the specified type. */
+    bool hasAncestor(State & state, ActivityType type, ActivityId act) const;
 
     void stopActivity(ActivityId act) override;
 
@@ -116,13 +117,18 @@ struct ProgressBar : public Logger
 
     std::chrono::milliseconds draw(State & state);
 
-    std::string getStatus(State & state);
+    std::string getStatus(State & state) const;
 
     void writeToStdout(std::string_view s) override;
 
     std::optional<char> ask(std::string_view msg) override;
 
     void setPrintBuildLogs(bool printBuildLogs) override;
+
+    /** Returns true if the given activity should not be rendered,
+     * in lieu of rendering its parent instead.
+     */
+    bool ancestorTakesPrecedence(State & state, ActivityType type, ActivityId parent);
 };
 
 Logger * makeProgressBar();

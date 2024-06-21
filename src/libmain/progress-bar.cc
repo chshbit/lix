@@ -168,23 +168,29 @@ void ProgressBar::startActivity(
         i->s = fmt("querying " ANSI_BOLD "%s" ANSI_NORMAL " on %s", name, getS(fields, 1));
     }
 
-    if ((type == actFileTransfer && hasAncestor(*state, actCopyPath, parent))
-        || (type == actFileTransfer && hasAncestor(*state, actQueryPathInfo, parent))
-        || (type == actCopyPath && hasAncestor(*state, actSubstitute, parent)))
+    if (ancestorTakesPrecedence(*state, type, parent)) {
         i->visible = false;
+    }
 
     update(*state);
 }
 
-/* Check whether an activity has an ancestore with the specified
-   type. */
-bool ProgressBar::hasAncestor(State & state, ActivityType type, ActivityId act)
+bool ProgressBar::hasAncestor(State & state, ActivityType type, ActivityId act) const
 {
+    // 0 is the sentinel value for a non-existent activity ID.
     while (act != 0) {
-        auto i = state.its.find(act);
-        if (i == state.its.end()) break;
-        if (i->second->type == type) return true;
-        act = i->second->parent;
+        auto const foundActIt = state.its.find(act);
+        if (foundActIt == state.its.end()) {
+            break;
+        }
+
+        ActInfo const & foundActInfo = *foundActIt->second;
+
+        if (foundActInfo.type == type) {
+            return true;
+        }
+
+        act = foundActInfo.parent;
     }
     return false;
 }
@@ -492,6 +498,23 @@ std::optional<char> ProgressBar::ask(std::string_view msg)
 void ProgressBar::setPrintBuildLogs(bool printBuildLogs)
 {
     this->printBuildLogs = printBuildLogs;
+}
+
+bool ProgressBar::ancestorTakesPrecedence(State & state, ActivityType type, ActivityId parent)
+{
+    if (type == actFileTransfer && hasAncestor(state, actCopyPath, parent)) {
+        return true;
+    }
+
+    if (type == actFileTransfer && hasAncestor(state, actQueryPathInfo, parent)) {
+        return true;
+    }
+
+    if (type == actCopyPath && hasAncestor(state, actSubstitute, parent)) {
+        return true;
+    }
+
+    return false;
 }
 
 Logger * makeProgressBar()
