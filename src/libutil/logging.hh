@@ -1,6 +1,7 @@
 #pragma once
 ///@file
 
+#include "escape-string.hh"
 #include "types.hh"
 #include "error.hh"
 #include "config.hh"
@@ -111,6 +112,18 @@ public:
         Field(const std::string & s) : type(tString), s(s) { }
         Field(const char * s) : type(tString), s(s) { }
         Field(const uint64_t & i) : type(tInt), i(i) { }
+
+        inline std::string to_string() const
+        {
+            switch (this->type) {
+            case tString:
+                return fmt("Field { s = \"%s\" }", escapeString(this->s, EscapeStringOptions{
+                    .escapeNonPrinting = true,
+                }));
+            case tInt:
+                return fmt("Field { i = %d }", this->i);
+            }
+        }
     };
 
     typedef std::vector<Field> Fields;

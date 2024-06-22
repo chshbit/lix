@@ -19,13 +19,18 @@ static_assert(EXPECTED == EXPECTED_RAW, "Hey, hey, the ANSI escape code definiti
 
 namespace nix
 {
-    TEST(ProgressBar, basicStatusRender) {
+    ProgressBar & init()
+    {
         initNix();
         initGC();
-
         startProgressBar();
-        ASSERT_NE(dynamic_cast<ProgressBar *>(logger), nullptr);
-        ProgressBar & progressBar = dynamic_cast<ProgressBar &>(*logger);
+
+        assert(dynamic_cast<ProgressBar *>(logger) != nullptr);
+        return dynamic_cast<ProgressBar &>(*logger);
+    }
+
+    TEST(ProgressBar, basicStatusRender) {
+        ProgressBar & progressBar = init();
 
         Activity act(
             progressBar,
@@ -40,4 +45,40 @@ namespace nix
 
         ASSERT_EQ(renderedStatus, EXPECTED);
     }
+
+    //TEST(ProgressBar, resultPermute) {
+    //    ProgressBar & progressBar = init();
+    //
+    //    Activity act(
+    //        progressBar,
+    //        lvlDebug,
+    //        actBuild,
+    //        "building '/nix/store/zdp9na4ci9s3g68xi9hnn5gbllf6ak03-lix-2.91.0-dev-lixpre20240616-0ba37dc.drv'",
+    //        Logger::Fields{
+    //            "/nix/store/zdp9na4ci9s3g68xi9hnn5gbllf6ak03-lix-2.91.0-dev-lixpre20240616-0ba37dc.drv",
+    //            "",
+    //            1,
+    //            1,
+    //        }
+    //    );
+    //
+    //    act.progress(
+    //        /* done */ 13,
+    //        /* expected */ 156,
+    //        /* running */ 2,
+    //        /* failed */ 0
+    //    );
+    //
+    //    act.progress(
+    //        /* done */ 13,
+    //        /* expected */ 156,
+    //        /* running */ 2,
+    //        /* failed */ 0
+    //    );
+    //
+    //    auto state = progressBar.state_.lock();
+    //    std::string const autoStatus = progressBar.getStatus(*state);
+    //
+    //    ASSERT_EQ(autoStatus, "a");
+    //}
 }

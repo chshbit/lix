@@ -11,6 +11,8 @@
 #include <iostream>
 #include <chrono>
 
+#include <boost/container/static_vector.hpp>
+
 namespace nix {
 
 using namespace std::literals::chrono_literals;
@@ -124,31 +126,32 @@ void ProgressBar::startActivity(
         .parent = parent,
         .startTime = std::chrono::steady_clock::now()
     });
-    auto i = std::prev(state->activities.end());
-    state->its.emplace(act, i);
-    state->activitiesByType[type].its.emplace(act, i);
+
+    auto mostRecentAct = std::prev(state->activities.end());
+    state->its.emplace(act, mostRecentAct);
+    state->activitiesByType[type].its.emplace(act, mostRecentAct);
 
     if (type == actBuild) {
         std::string name(storePathToName(getS(fields, 0)));
         if (name.ends_with(".drv"))
             name = name.substr(0, name.size() - 4);
-        i->s = fmt("building " ANSI_BOLD "%s" ANSI_NORMAL, name);
+        mostRecentAct->s = fmt("building " ANSI_BOLD "%s" ANSI_NORMAL, name);
         auto machineName = getS(fields, 1);
         if (machineName != "")
-            i->s += fmt(" on " ANSI_BOLD "%s" ANSI_NORMAL, machineName);
+            mostRecentAct->s += fmt(" on " ANSI_BOLD "%s" ANSI_NORMAL, machineName);
 
         // Used to be curRound and nrRounds, but the
         // implementation was broken for a long time.
         if (getI(fields, 2) != 1 || getI(fields, 3) != 1) {
             throw Error("log message indicated repeating builds, but this is not currently implemented");
         }
-        i->name = DrvName(name).name;
+        mostRecentAct->name = DrvName(name).name;
     }
 
     if (type == actSubstitute) {
         auto name = storePathToName(getS(fields, 0));
         auto sub = getS(fields, 1);
-        i->s = fmt(
+        mostRecentAct->s = fmt(
             sub.starts_with("local")
             ? "copying " ANSI_BOLD "%s" ANSI_NORMAL " from %s"
             : "fetching " ANSI_BOLD "%s" ANSI_NORMAL " from %s",
@@ -159,17 +162,17 @@ void ProgressBar::startActivity(
         auto name = storePathToName(getS(fields, 0));
         if (name.ends_with(".drv"))
             name = name.substr(0, name.size() - 4);
-        i->s = fmt("post-build " ANSI_BOLD "%s" ANSI_NORMAL, name);
-        i->name = DrvName(name).name;
+        mostRecentAct->s = fmt("post-build " ANSI_BOLD "%s" ANSI_NORMAL, name);
+        mostRecentAct->name = DrvName(name).name;
     }
 
     if (type == actQueryPathInfo) {
         auto name = storePathToName(getS(fields, 0));
-        i->s = fmt("querying " ANSI_BOLD "%s" ANSI_NORMAL " on %s", name, getS(fields, 1));
+        mostRecentAct->s = fmt("querying " ANSI_BOLD "%s" ANSI_NORMAL " on %s", name, getS(fields, 1));
     }
 
     if (ancestorTakesPrecedence(*state, type, parent)) {
-        i->visible = false;
+        mostRecentAct->visible = false;
     }
 
     update(*state);
@@ -199,19 +202,22 @@ void ProgressBar::stopActivity(ActivityId act)
 {
     auto state(state_.lock());
 
-    auto i = state->its.find(act);
-    if (i != state->its.end()) {
+    auto const currentAct = state->its.find(act);
+    if (currentAct != state->its.end()) {
 
-        auto & actByType = state->activitiesByType[i->second->type];
-        actByType.done += i->second->done;
-        actByType.failed += i->second->failed;
+        std::list<ActInfo>::iterator const & actInfo = currentAct->second;
 
-        for (auto & j : i->second->expectedByType)
-            state->activitiesByType[j.first].expected -= j.second;
+        auto & actByType = state->activitiesByType[actInfo->type];
+        actByType.done += actInfo->done;
+        actByType.failed += actInfo->failed;
+
+        for (auto const & [type, expected] : actInfo->expectedByType) {
+            state->activitiesByType[type].expected -= expected;
+        }
 
         actByType.its.erase(act);
-        state->activities.erase(i->second);
-        state->its.erase(i);
+        state->activities.erase(actInfo);
+        state->its.erase(currentAct);
     }
 
     update(*state);
@@ -230,9 +236,9 @@ void ProgressBar::result(ActivityId act, ResultType type, const std::vector<Fiel
     else if (type == resBuildLogLine || type == resPostBuildLogLine) {
         auto lastLine = chomp(getS(fields, 0));
         if (!lastLine.empty()) {
-            auto i = state->its.find(act);
-            assert(i != state->its.end());
-            ActInfo info = *i->second;
+            auto found = state->its.find(act);
+            assert(found != state->its.end());
+            ActInfo info = *found->second;
             if (printBuildLogs) {
                 auto suffix = "> ";
                 if (type == resPostBuildLogLine) {
@@ -240,10 +246,10 @@ void ProgressBar::result(ActivityId act, ResultType type, const std::vector<Fiel
                 }
                 log(*state, lvlInfo, ANSI_FAINT + info.name.value_or("unnamed") + suffix + ANSI_NORMAL + lastLine);
             } else {
-                state->activities.erase(i->second);
+                state->activities.erase(found->second);
                 info.lastLine = lastLine;
                 state->activities.emplace_back(info);
-                i->second = std::prev(state->activities.end());
+                found->second = std::prev(state->activities.end());
                 update(*state);
             }
         }
@@ -281,11 +287,11 @@ void ProgressBar::result(ActivityId act, ResultType type, const std::vector<Fiel
         auto i = state->its.find(act);
         assert(i != state->its.end());
         ActInfo & actInfo = *i->second;
-        auto type = (ActivityType) getI(fields, 0);
-        auto & j = actInfo.expectedByType[type];
-        state->activitiesByType[type].expected -= j;
-        j = getI(fields, 1);
-        state->activitiesByType[type].expected += j;
+        auto const type = static_cast<ActivityType>(getI(fields, 0));
+        uint64_t & thisExpected = actInfo.expectedByType[type];
+        state->activitiesByType[type].expected -= thisExpected;
+        thisExpected = getI(fields, 1);
+        state->activitiesByType[type].expected += thisExpected;
         update(*state);
     }
 }
@@ -354,16 +360,24 @@ std::chrono::milliseconds ProgressBar::draw(State & state)
     return nextWakeup;
 }
 
-std::string ProgressBar::getStatus(State & state)
+std::string ProgressBar::getStatus(State & state) const
 {
-    constexpr auto MiB = 1024.0 * 1024.0;
+    constexpr static auto MiB = 1024.0 * 1024.0;
 
-    std::string res;
+    // Each time the `showActivity` lambda is called:
+    // actBuild, actFileTransfer, actVerifyPaths,
+    // + 3 permutations for actCopyPaths, actCopyPath,
+    // + corrupted and unstrusted paths.
+    constexpr static auto MAX_PARTS = 8;
+
+    // Stack-allocated vector.
+    // No need to heap allocate here when we have such a low maxiumum.
+    boost::container::static_vector<std::string, MAX_PARTS> parts;
 
     auto renderActivity = [&](ActivityType type, const std::string & itemFmt, const std::string & numberFmt = "%d", double unit = 1) {
-        auto & act = state.activitiesByType[type];
+        auto const & act = state.activitiesByType[type];
         uint64_t done = act.done, expected = act.done, running = 0, failed = act.failed;
-        for (auto & [actId, infoIt] : act.its) {
+        for (auto const & [actId, infoIt] : act.its) {
             done += infoIt->done;
             expected += infoIt->expected;
             running += infoIt->running;
@@ -428,31 +442,38 @@ std::string ProgressBar::getStatus(State & state)
     };
 
     auto showActivity = [&](ActivityType type, const std::string & itemFmt, const std::string & numberFmt = "%d", double unit = 1) {
-        auto s = renderActivity(type, itemFmt, numberFmt, unit);
-        if (s.empty()) return;
-        if (!res.empty()) res += ", ";
-        res += s;
+        auto rendered = renderActivity(type, itemFmt, numberFmt, unit);
+        if (!rendered.empty()) {
+            parts.emplace_back(std::move(rendered));
+        }
     };
 
     showActivity(actBuilds, "%s built");
 
-    auto s1 = renderActivity(actCopyPaths, "%s copied");
-    auto s2 = renderActivity(actCopyPath, "%s MiB", "%.1f", MiB);
+    {
+        auto const renderedMultiCopy = renderActivity(actCopyPaths, "%s copied");
+        auto const renderedSingleCopy = renderActivity(actCopyPath, "%s MiB", "%.1f", MiB);
 
-    if (!s1.empty() || !s2.empty()) {
-        if (!res.empty()) res += ", ";
-        if (s1.empty()) res += "0 copied"; else res += s1;
-        if (!s2.empty()) { res += " ("; res += s2; res += ')'; }
+        if (!renderedMultiCopy.empty() || !renderedSingleCopy.empty()) {
+            std::string part = concatStrings(
+                renderedMultiCopy.empty() ? "0 copied" : renderedMultiCopy,
+                !renderedSingleCopy.empty() ? fmt(" (%s)", renderedSingleCopy) : ""
+            );
+            parts.emplace_back(std::move(part));
+        }
     }
 
     showActivity(actFileTransfer, "%s MiB DL", "%.1f", MiB);
 
     {
-        auto s = renderActivity(actOptimiseStore, "%s paths optimised");
-        if (s != "") {
-            s += fmt(", %.1f MiB / %d inodes freed", state.bytesLinked / MiB, state.filesLinked);
-            if (!res.empty()) res += ", ";
-            res += s;
+        auto renderedOptimise = renderActivity(actOptimiseStore, "%s paths optimised");
+        if (!renderedOptimise.empty()) {
+            parts.emplace_back(std::move(renderedOptimise));
+            parts.emplace_back(fmt(
+                "%.1f MiB / %d inodes freed",
+                state.bytesLinked / MiB,
+                state.filesLinked
+            ));
         }
     }
 
@@ -460,16 +481,14 @@ std::string ProgressBar::getStatus(State & state)
     showActivity(actVerifyPaths, "%s paths verified");
 
     if (state.corruptedPaths) {
-        if (!res.empty()) res += ", ";
-        res += fmt(ANSI_RED "%d corrupted" ANSI_NORMAL, state.corruptedPaths);
+        parts.emplace_back(fmt(ANSI_RED "%d corrupted" ANSI_NORMAL, state.corruptedPaths));
     }
 
     if (state.untrustedPaths) {
-        if (!res.empty()) res += ", ";
-        res += fmt(ANSI_RED "%d untrusted" ANSI_NORMAL, state.untrustedPaths);
+        parts.emplace_back(fmt(ANSI_RED "%d untrusted" ANSI_NORMAL, state.untrustedPaths));
     }
 
-    return res;
+    return concatStringsSep(", ", parts);
 }
 
 void ProgressBar::writeToStdout(std::string_view s)
