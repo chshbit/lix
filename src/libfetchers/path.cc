@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Nix and Lix Authors
+//
+// SPDX-License-Identifier: LGPL-2.1-only
+
 #include "fetchers.hh"
 #include "store-api.hh"
 #include "archive.hh"

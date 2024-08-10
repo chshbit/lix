@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Nix and Lix Authors
+//
+// SPDX-License-Identifier: LGPL-2.1-only
+
 #include "abstract-setting-to-json.hh"
 #include "args.hh"
 #include "config-impl.hh"
