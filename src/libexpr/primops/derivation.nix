@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2024 Nix and Lix Authors
+#
+# SPDX-License-Identifier: LGPL-2.1-only
+
 /*
   This is the implementation of the ‘derivation’ builtin function.
   It's actually a wrapper around the ‘derivationStrict’ primop.

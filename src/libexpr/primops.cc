@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Nix and Lix Authors
+//
+// SPDX-License-Identifier: LGPL-2.1-only
+
 #include "archive.hh"
 #include "derivations.hh"
 #include "downstream-placeholder.hh"

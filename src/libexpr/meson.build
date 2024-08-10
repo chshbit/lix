@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2024 Nix and Lix Authors
+#
+# SPDX-License-Identifier: LGPL-2.1-only
+
 libexpr_generated_headers = [
   gen_header.process('primops/derivation.nix', preserve_path_from : meson.current_source_dir()),
 ]
