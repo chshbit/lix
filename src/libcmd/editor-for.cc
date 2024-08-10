@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Nix and Lix Authors
+//
+// SPDX-License-Identifier: LGPL-2.1-only
+
 #include "editor-for.hh"
 #include "environment-variables.hh"
 #include "source-path.hh"
