@@ -62,6 +62,8 @@ struct LocalStore::State::Stmts {
     SQLiteStmt QueryReferences;
     SQLiteStmt QueryReferrers;
     SQLiteStmt InvalidatePath;
+    SQLiteStmt InvalidatePhantomReferrers;
+    SQLiteStmt QueryPhantomReferrers;
     SQLiteStmt AddDerivationOutput;
     SQLiteStmt RegisterRealisedOutput;
     SQLiteStmt UpdateRealisedOutput;
@@ -384,6 +386,10 @@ LocalStore::LocalStore(const Params & params)
         "select path from Refs join ValidPaths on referrer = id where reference = (select id from ValidPaths where path = ?);");
     state->stmts->InvalidatePath.create(state->db,
         "delete from ValidPaths where path = ?;");
+    state->stmts->InvalidatePhantomReferrers.create(state->db,
+        "delete from Refs where referrer IN (select referrer from Refs left join ValidPaths on referrer = id where reference = (select id from ValidPaths where path = ?));");
+    state->stmts->QueryPhantomReferrers.create(state->db,
+        "select referrer from Refs left join ValidPaths on referrer = id where reference = (select id from ValidPaths where path = ?);");
     state->stmts->AddDerivationOutput.create(state->db,
         "insert or replace into DerivationOutputs (drv, id, path) values (?, ?, ?);");
     state->stmts->QueryValidDerivers.create(state->db,
@@ -1522,10 +1528,40 @@ void LocalStore::invalidatePathChecked(const StorePath & path)
             if (!referrers.empty())
                 throw PathInUse("cannot delete path '%s' because it is in use by %s",
                     printStorePath(path), showPaths(referrers));
+
+            // Note: `queryReferrers` will only return *valid* referrers.
+            // i.e. referrer for which there is a *ValidPath* row in the SQLite database.
+            // In the unfortunate situation where a valid path is removed but its corresponding `Refs` are not removed (*), we better just invalidate all these phantom referrers,
+            // otherwise we will create a foreign key violation when we actually try to invalidate paths.
+            //
+            // (*) : yes, there's a "ON DELETE CASCADE" on the referrer foreign key.
+            // Unfortunately, in practice, it doesn't ensure integrity over large SQLite databases.
+            if (hasPhantomReferrers(*state, path)) {
+                warn("'%s' has phantom referrers (disappeared referrers from the valid path table)", printStorePath(path));
+                invalidatePhantomReferrers(*state, path);
+            }
             invalidatePath(*state, path);
         }
 
         txn.commit();
+    });
+}
+
+bool LocalStore::hasPhantomReferrers(State & state, const StorePath & path)
+{
+    return retrySQLite<bool>([&]() -> bool {
+        debug("checking for phantom referrers for '%s'", printStorePath(path));
+        auto useQueryPhantomReferrers(state.stmts->QueryPhantomReferrers.use()(printStorePath(path)));
+
+        return useQueryPhantomReferrers.next();
+    });
+}
+
+void LocalStore::invalidatePhantomReferrers(State & state, const StorePath & path)
+{
+    retrySQLite<void>([&]() {
+        debug("invalidating phantom referrers to '%s'", printStorePath(path));
+        state.stmts->InvalidatePhantomReferrers.use()(printStorePath(path)).exec();
     });
 }
 

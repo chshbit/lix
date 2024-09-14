@@ -76,6 +76,7 @@ functional_tests_scripts = [
   'flakes/flake-registry.sh',
   'flakes/subdir-flake.sh',
   'gc.sh',
+  'phantom-referrers-gc.sh',
   'nix-collect-garbage-d.sh',
   'nix-collect-garbage-dry-run.sh',
   'remote-store.sh',

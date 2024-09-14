@@ -322,6 +322,14 @@ private:
      * Delete a path from the Nix store.
      */
     void invalidatePathChecked(const StorePath & path);
+    /**
+     * Check if there's phantom referrers for a certain path in the Nix SQLite database
+     */
+    bool hasPhantomReferrers(State & state, const StorePath & path);
+    /**
+     * Invalidate all phantom referrers from the Nix SQLite database.
+     */
+    void invalidatePhantomReferrers(State & state, const StorePath & path);
 
     void verifyPath(const StorePath & path, const StorePathSet & store,
         StorePathSet & done, StorePathSet & validPaths, RepairFlag repair, bool & errors);
